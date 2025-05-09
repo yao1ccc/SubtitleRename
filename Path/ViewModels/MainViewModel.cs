@@ -3,6 +3,7 @@ using LearnPath.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.ComponentModel;
 using System.Text.RegularExpressions;
+using System.Collections.ObjectModel;
 
 namespace LearnPath.ViewModels
 {
@@ -14,8 +15,7 @@ namespace LearnPath.ViewModels
             set
             {
                 subtitleSuffixes = value;
-                Model.PathUpdate(this);
-                OnPropertyChanged(nameof(FileCollectionShows));
+                PathUpdate();
             }
         }
         public List<string> VideoSuffixes
@@ -24,72 +24,49 @@ namespace LearnPath.ViewModels
             set
             {
                 videoSuffixes = value;
-                Model.PathUpdate(this);
-                OnPropertyChanged(nameof(FileCollectionShows));
+                PathUpdate();
             }
         }
-        public Regex? SubtitleFilter
+        public RegexFilter? SubtitleFilter
         {
-            get => subtitleFilter;
+            get { return subtitleFilter; }
             set
             {
                 subtitleFilter = value;
 
-                if (value is null)
+                if (subtitleFilter is not null)
                 {
-                    SubtitleFilterGroups = [];
-                    SubtitleFilterIndex = 0;
-                    return;
-                }
-
-                SubtitleFilterGroups = value.GetGroupNumbers();
-
-                if (FileCollectionShows.Count == 0)
-                {
-                    return;
-                }
-
-                foreach (var fileCollectionItem in from FileCollectionItem fileCollectionItem in FileCollectionShows
-                                                   where fileCollectionItem.FileType == FileType.Subtitle
-                                                   select fileCollectionItem)
-                {
-                    fileCollectionItem.MatchResult = value.Match(fileCollectionItem.FileInfo.Name);
+                    FilterUpdate(ref subtitleFilter, FileType.Subtitle);
                 }
             }
         }
-        public Regex? VideoFilter
+
+
+        public RegexFilter? VideoFilter
         {
-            get => videoFilter;
-            set
+            get { return videoFilter; }
+            set 
             {
                 videoFilter = value;
-                if (value is not null)
+
+                if (videoFilter is not null)
                 {
-                    VideoFilterGroups = value.GetGroupNumbers();
-                    foreach (var fileCollectionItem in from FileCollectionItem fileCollectionItem in FileCollectionShows
-                                                       where fileCollectionItem.FileType == FileType.Video
-                                                       select fileCollectionItem)
-                    {
-                        fileCollectionItem.MatchResult = value.Match(fileCollectionItem.FileInfo.Name);
-                    }
-                }
+                    FilterUpdate(ref videoFilter, FileType.Video);
+                }  
             }
         }
+
         public DirectoryInfo? RootFolder
         {
             get => rootFolder;
             set
             {
                 SetProperty(ref rootFolder, value);
-                Model.PathUpdate(this);
-                OnPropertyChanged(nameof(FileCollectionShows));
+                PathUpdate();
             }
         }
-        public int[] VideoFilterGroups { get; set; } = [];
-        public int[] SubtitleFilterGroups { get; set; } = [];
-        public int VideoFilterIndex { get; set; } = 0;
-        public int SubtitleFilterIndex { get; set; } = 0;
-        public List<FileCollectionItem> FileCollectionShows { set; get; } = [];
+
+        public ObservableCollection<FileCollectionItem> FileCollectionShows { set; get; } = [];
 
         public string Error => string.Empty;
 
@@ -111,10 +88,63 @@ namespace LearnPath.ViewModels
         }
 
         private DirectoryInfo? rootFolder;
-        private Regex? subtitleFilter;
-        private Regex? videoFilter;
         private List<string> subtitleSuffixes = ["srt", "ass", "ssa"];
         private List<string> videoSuffixes = ["mkv", "mp4"];
+        private RegexFilter? videoFilter;
+        private RegexFilter? subtitleFilter;
+
+        private void FilterUpdate(ref RegexFilter filter, FileType type) {
+            if (FileCollectionShows.Count == 0)
+            {
+                return;
+            }
+
+            foreach (var f in from FileCollectionItem fileCollectionItem in FileCollectionShows
+                                               where fileCollectionItem.FileType == type
+                                               select fileCollectionItem)
+            {
+                f.MatchResult = filter.regex.Match(f.FileInfo.Name);
+            }
+
+            var sample = FileCollectionShows.FirstOrDefault(f => f.FileType == type);
+            if (sample is not null && sample.MatchResult is not null && sample.MatchResult.Success)
+            {
+                for (int i = 1; i < sample.MatchResult.Groups.Count; i++)
+                {
+                    var match = Regex.Match(sample.MatchResult.Groups[i].Value, "\\d");
+                    if (match.Success) 
+                    {
+                        filter.SetIndex(i);
+                        break;
+                    }
+                }
+            }
+        }
+
+        private void PathUpdate() {
+            FileCollectionShows.Clear();
+
+            if (RootFolder == null)
+            {
+                return;
+            }
+
+            foreach (string suffix in SubtitleSuffixes)
+            {
+                foreach (var subtitleFile in RootFolder.GetFiles("*." + suffix))
+                {
+                    FileCollectionShows.Add(new FileCollectionItem(subtitleFile, FileType.Subtitle));
+                }
+            }
+
+            foreach (string suffix in VideoSuffixes)
+            {
+                foreach (var subtitleFile in RootFolder.GetFiles("*." + suffix))
+                {
+                    FileCollectionShows.Add(new FileCollectionItem(subtitleFile, FileType.Video));
+                }
+            }
+        }
     }
 
 }

@@ -1,6 +1,7 @@
 ﻿using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Windows.Data;
+using LearnPath.Models;
 
 namespace LearnPath.ViewModels
 {
@@ -10,7 +11,7 @@ namespace LearnPath.ViewModels
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
             return value switch
             {
-                Regex regex => regex.ToString(),
+                RegexFilter regex => regex.ToString(),
                 _ => string.Empty,
             };
         }
