@@ -17,11 +17,19 @@ namespace LearnPath.ViewModels
         }
 
         public object? ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
-            return value switch
+            if (value is string s && !string.IsNullOrEmpty(s))
             {
-                string regex when !string.IsNullOrEmpty(regex) => new Regex(regex),
-                _ => null,
-            };
+                try
+                {
+                    Regex regex = new(s);
+                    return new RegexFilter(regex);
+                }
+                catch 
+                {
+                    return new ArgumentException("Regex err");
+                }
+            }
+            return null;
         }
     }
 }

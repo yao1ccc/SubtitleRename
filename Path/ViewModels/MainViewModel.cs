@@ -45,14 +45,14 @@ namespace LearnPath.ViewModels
         public RegexFilter? VideoFilter
         {
             get { return videoFilter; }
-            set 
+            set
             {
                 videoFilter = value;
 
                 if (videoFilter is not null)
                 {
                     FilterUpdate(ref videoFilter, FileType.Video);
-                }  
+                }
             }
         }
 
@@ -100,8 +100,8 @@ namespace LearnPath.ViewModels
             }
 
             foreach (var f in from FileCollectionItem fileCollectionItem in FileCollectionShows
-                                               where fileCollectionItem.FileType == type
-                                               select fileCollectionItem)
+                              where fileCollectionItem.FileType == type
+                              select fileCollectionItem)
             {
                 f.MatchResult = filter.regex.Match(f.FileInfo.Name);
             }
@@ -112,10 +112,10 @@ namespace LearnPath.ViewModels
                 for (int i = 1; i < sample.MatchResult.Groups.Count; i++)
                 {
                     var match = Regex.Match(sample.MatchResult.Groups[i].Value, "\\d");
-                    if (match.Success) 
+                    if (match.Success)
                     {
                         filter.SetIndex(i);
-                        break;
+                        return;
                     }
                 }
             }
