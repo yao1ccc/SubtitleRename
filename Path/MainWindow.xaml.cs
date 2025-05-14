@@ -1,7 +1,7 @@
-﻿using LearnPath.ViewModels;
+﻿using SubtitleRename.ViewModels;
 using System.Windows;
 
-namespace LearnPath
+namespace SubtitleRename
 {
     public partial class MainWindow : Window
     {

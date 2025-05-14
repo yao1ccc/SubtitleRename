@@ -2,7 +2,7 @@
 using System.Data;
 using System.Windows;
 
-namespace LearnPath
+namespace SubtitleRename
 {
     /// <summary>
     /// Interaction logic for App.xaml

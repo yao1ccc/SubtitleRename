@@ -1,9 +1,9 @@
 ﻿using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Windows.Data;
-using LearnPath.Models;
+using SubtitleRename.Models;
 
-namespace LearnPath.ViewModels
+namespace SubtitleRename.ViewModels
 {
     public class RegexConverter : IValueConverter
     {

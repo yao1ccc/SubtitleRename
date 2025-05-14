@@ -1,11 +1,11 @@
 ﻿using System.IO;
-using LearnPath.Models;
+using SubtitleRename.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using System.ComponentModel;
 using System.Text.RegularExpressions;
 using System.Collections.ObjectModel;
 
-namespace LearnPath.ViewModels
+namespace SubtitleRename.ViewModels
 {
     partial class MainViewModel : ObservableObject, IDataErrorInfo
     {
@@ -33,11 +33,7 @@ namespace LearnPath.ViewModels
             set
             {
                 subtitleFilter = value;
-
-                if (subtitleFilter is not null)
-                {
-                    FilterUpdate(ref subtitleFilter, FileType.Subtitle);
-                }
+                SubtitleFilterUpdate();
             }
         }
 
@@ -48,11 +44,7 @@ namespace LearnPath.ViewModels
             set
             {
                 videoFilter = value;
-
-                if (videoFilter is not null)
-                {
-                    FilterUpdate(ref videoFilter, FileType.Video);
-                }
+                VideoFilterUpdate();
             }
         }
 
@@ -66,7 +58,8 @@ namespace LearnPath.ViewModels
             }
         }
 
-        public ObservableCollection<FileCollectionItem> FileCollectionShows { set; get; } = [];
+        public ObservableCollection<FileCollectionItem> SubtitleCollectionShows { set; get; } = [];
+        public ObservableCollection<FileCollectionItem> VideoCollectionShows { set; get; } = [];
 
         public string Error => string.Empty;
 
@@ -93,20 +86,16 @@ namespace LearnPath.ViewModels
         private RegexFilter? videoFilter;
         private RegexFilter? subtitleFilter;
 
-        private void FilterUpdate(ref RegexFilter filter, FileType type) {
-            if (FileCollectionShows.Count == 0)
+        private void VideoFilterUpdate() {
+
+            if (VideoCollectionShows.Count == 0 || videoFilter is null) { return; }
+
+            foreach (var fileCollectionItem in VideoCollectionShows)
             {
-                return;
+                fileCollectionItem.MatchResult = videoFilter.regex.Match(fileCollectionItem.FileInfo.Name);
             }
 
-            foreach (var f in from FileCollectionItem fileCollectionItem in FileCollectionShows
-                              where fileCollectionItem.FileType == type
-                              select fileCollectionItem)
-            {
-                f.MatchResult = filter.regex.Match(f.FileInfo.Name);
-            }
-
-            var sample = FileCollectionShows.FirstOrDefault(f => f.FileType == type);
+            var sample = VideoCollectionShows.FirstOrDefault();
             if (sample is not null && sample.MatchResult is not null && sample.MatchResult.Success)
             {
                 for (int i = 1; i < sample.MatchResult.Groups.Count; i++)
@@ -114,7 +103,31 @@ namespace LearnPath.ViewModels
                     var match = Regex.Match(sample.MatchResult.Groups[i].Value, "\\d");
                     if (match.Success)
                     {
-                        filter.SetIndex(i);
+                        videoFilter.SetIndex(i);
+                        return;
+                    }
+                }
+            }
+        }
+
+        private void SubtitleFilterUpdate() {
+
+            if (SubtitleCollectionShows.Count == 0 || subtitleFilter is null) { return; }
+
+            foreach (var fileCollectionItem in SubtitleCollectionShows)
+            {
+                fileCollectionItem.MatchResult = subtitleFilter.regex.Match(fileCollectionItem.FileInfo.Name);
+            }
+
+            var sample = SubtitleCollectionShows.FirstOrDefault();
+            if (sample is not null && sample.MatchResult is not null && sample.MatchResult.Success)
+            {
+                for (int i = 1; i < sample.MatchResult.Groups.Count; i++)
+                {
+                    var match = Regex.Match(sample.MatchResult.Groups[i].Value, "\\d");
+                    if (match.Success)
+                    {
+                        subtitleFilter.SetIndex(i);
                         return;
                     }
                 }
@@ -122,7 +135,8 @@ namespace LearnPath.ViewModels
         }
 
         private void PathUpdate() {
-            FileCollectionShows.Clear();
+            SubtitleCollectionShows.Clear();
+            VideoCollectionShows.Clear();
 
             if (RootFolder == null)
             {
@@ -133,7 +147,7 @@ namespace LearnPath.ViewModels
             {
                 foreach (var subtitleFile in RootFolder.GetFiles("*." + suffix))
                 {
-                    FileCollectionShows.Add(new FileCollectionItem(subtitleFile, FileType.Subtitle));
+                    SubtitleCollectionShows.Add(new FileCollectionItem(subtitleFile, FileType.Subtitle));
                 }
             }
 
@@ -141,7 +155,7 @@ namespace LearnPath.ViewModels
             {
                 foreach (var subtitleFile in RootFolder.GetFiles("*." + suffix))
                 {
-                    FileCollectionShows.Add(new FileCollectionItem(subtitleFile, FileType.Video));
+                    VideoCollectionShows.Add(new FileCollectionItem(subtitleFile, FileType.Video));
                 }
             }
         }

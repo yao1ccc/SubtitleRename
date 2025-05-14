@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Windows.Data;
 
-namespace LearnPath.ViewModels
+namespace SubtitleRename.ViewModels
 {
     class SplitConverter : IValueConverter
     {

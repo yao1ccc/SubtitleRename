@@ -2,7 +2,7 @@
 using System.IO;
 using System.Windows.Data;
 
-namespace LearnPath.ViewModels
+namespace SubtitleRename.ViewModels
 {
     class DirectoryNameConverter : IValueConverter
     {

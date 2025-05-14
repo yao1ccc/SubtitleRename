@@ -2,7 +2,7 @@
 using System.Text.RegularExpressions;
 
 
-namespace LearnPath.Models
+namespace SubtitleRename.Models
 {
     enum FileType
     {
