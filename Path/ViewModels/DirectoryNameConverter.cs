@@ -4,9 +4,10 @@ using System.Windows.Data;
 
 namespace SubtitleRename.ViewModels
 {
-    class DirectoryNameConverter : IValueConverter
+    sealed class DirectoryNameConverter : IValueConverter
     {
-        public static DirectoryNameConverter Instance = new();
+        public static DirectoryNameConverter Instance { get; } = new();
+
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
             return value switch
             {
@@ -16,7 +17,7 @@ namespace SubtitleRename.ViewModels
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
-            throw new ArgumentException();
+            throw new ArgumentException("DirectoryNameConverter");
         }
     }
 }

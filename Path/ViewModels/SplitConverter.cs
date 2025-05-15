@@ -1,14 +1,12 @@
-﻿using System;
-using System.Globalization;
-using System.IO;
-using System.Linq;
+﻿using System.Globalization;
 using System.Windows.Data;
 
 namespace SubtitleRename.ViewModels
 {
-    class SplitConverter : IValueConverter
+    sealed class SplitConverter : IValueConverter
     {
-        public static SplitConverter Instance = new();
+        public static SplitConverter Instance { get; } = new();
+
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
             return (value) switch
             {

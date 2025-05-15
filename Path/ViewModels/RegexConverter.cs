@@ -5,9 +5,10 @@ using SubtitleRename.Models;
 
 namespace SubtitleRename.ViewModels
 {
-    public class RegexConverter : IValueConverter
+    sealed class RegexConverter : IValueConverter
     {
-        public static RegexConverter Instance = new();
+        public static RegexConverter Instance { get; } = new();
+
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
             return value switch
             {

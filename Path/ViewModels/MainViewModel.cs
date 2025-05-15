@@ -4,10 +4,11 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using System.ComponentModel;
 using System.Text.RegularExpressions;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 
 namespace SubtitleRename.ViewModels
 {
-    partial class MainViewModel : ObservableObject, IDataErrorInfo
+    sealed partial class MainViewModel : ObservableObject, IDataErrorInfo
     {
         public List<string> SubtitleSuffixes
         {
@@ -37,7 +38,6 @@ namespace SubtitleRename.ViewModels
             }
         }
 
-
         public RegexFilter? VideoFilter
         {
             get { return videoFilter; }
@@ -57,10 +57,8 @@ namespace SubtitleRename.ViewModels
                 PathUpdate();
             }
         }
-
-        public ObservableCollection<FileCollectionItem> SubtitleCollectionShows { set; get; } = [];
-        public ObservableCollection<FileCollectionItem> VideoCollectionShows { set; get; } = [];
-
+        public ObservableCollection<FileCollectionItem> SubtitleCollectionShows { get; set; } = [];
+        public ObservableCollection<FileCollectionItem> VideoCollectionShows { get; set; } = [];
         public string Error => string.Empty;
 
         public string this[string columnName]
@@ -88,11 +86,16 @@ namespace SubtitleRename.ViewModels
 
         private void VideoFilterUpdate() {
 
-            if (VideoCollectionShows.Count == 0 || videoFilter is null) { return; }
-
-            foreach (var fileCollectionItem in VideoCollectionShows)
+            if (VideoCollectionShows.Count == 0 || videoFilter is null)
             {
-                fileCollectionItem.MatchResult = videoFilter.regex.Match(fileCollectionItem.FileInfo.Name);
+                return;
+            }
+
+            videoFilter.GroupIndex = 0;
+
+            foreach (var f in VideoCollectionShows)
+            {
+                f.MatchResult = videoFilter.regex.Match(f.FileInfo.Name);
             }
 
             var sample = VideoCollectionShows.FirstOrDefault();
@@ -100,23 +103,31 @@ namespace SubtitleRename.ViewModels
             {
                 for (int i = 1; i < sample.MatchResult.Groups.Count; i++)
                 {
-                    var match = Regex.Match(sample.MatchResult.Groups[i].Value, "\\d");
+                    var match = DigitRegex().Match(sample.MatchResult.Groups[i].Value);
                     if (match.Success)
                     {
-                        videoFilter.SetIndex(i);
-                        return;
+                        videoFilter.GroupIndex = i;
+                        Debug.WriteLine($"Index:{i} all:{sample.MatchResult.Value} value:{sample.MatchResult.Groups[i].Value}");
+                        break;
                     }
                 }
             }
+
+            VideoIndexUpdate();
         }
 
         private void SubtitleFilterUpdate() {
 
-            if (SubtitleCollectionShows.Count == 0 || subtitleFilter is null) { return; }
-
-            foreach (var fileCollectionItem in SubtitleCollectionShows)
+            if (SubtitleCollectionShows.Count == 0 || subtitleFilter is null)
             {
-                fileCollectionItem.MatchResult = subtitleFilter.regex.Match(fileCollectionItem.FileInfo.Name);
+                return;
+            }
+
+            subtitleFilter.GroupIndex = 0;
+
+            foreach (var f in SubtitleCollectionShows)
+            {
+                f.MatchResult = subtitleFilter.regex.Match(f.FileInfo.Name);
             }
 
             var sample = SubtitleCollectionShows.FirstOrDefault();
@@ -124,41 +135,78 @@ namespace SubtitleRename.ViewModels
             {
                 for (int i = 1; i < sample.MatchResult.Groups.Count; i++)
                 {
-                    var match = Regex.Match(sample.MatchResult.Groups[i].Value, "\\d");
+                    var match = DigitRegex().Match(sample.MatchResult.Groups[i].Value);
                     if (match.Success)
                     {
-                        subtitleFilter.SetIndex(i);
-                        return;
+                        subtitleFilter.GroupIndex = i;
+                        Debug.WriteLine($"Index:{i} all:{sample.MatchResult.Value} value:{sample.MatchResult.Groups[i].Value}");
+                        break;
                     }
                 }
             }
+
+            SubtitleIndexUpdate();
         }
 
         private void PathUpdate() {
+
             SubtitleCollectionShows.Clear();
             VideoCollectionShows.Clear();
 
-            if (RootFolder == null)
+            if (RootFolder is null)
             {
                 return;
             }
 
             foreach (string suffix in SubtitleSuffixes)
             {
-                foreach (var subtitleFile in RootFolder.GetFiles("*." + suffix))
+                foreach (var f in RootFolder.GetFiles("*." + suffix))
                 {
-                    SubtitleCollectionShows.Add(new FileCollectionItem(subtitleFile, FileType.Subtitle));
+                    SubtitleCollectionShows.Add(new FileCollectionItem(f));
+                    Debug.WriteLine(f.Name);
                 }
             }
 
             foreach (string suffix in VideoSuffixes)
             {
-                foreach (var subtitleFile in RootFolder.GetFiles("*." + suffix))
+                foreach (var f in RootFolder.GetFiles("*." + suffix))
                 {
-                    VideoCollectionShows.Add(new FileCollectionItem(subtitleFile, FileType.Video));
+                    VideoCollectionShows.Add(new FileCollectionItem(f));
+                    Debug.WriteLine(f.Name);
                 }
             }
-        }
-    }
 
+            VideoFilterUpdate();
+            SubtitleFilterUpdate();
+        }
+        private void SubtitleIndexUpdate() {
+
+            if (subtitleFilter is null) { return; }
+
+            foreach (var f in SubtitleCollectionShows)
+            {
+                if (f.MatchResult is null) { continue; }
+                var match = f.MatchResult.Groups[subtitleFilter.GroupIndex];
+                f.MatchStart = match.Index;
+                f.MatchLength = match.Length;
+                Debug.WriteLine(match.Value);
+            }
+        }
+        private void VideoIndexUpdate() {
+
+            if (videoFilter is null) { return; }
+
+            foreach (var f in VideoCollectionShows)
+            {
+                if (f.MatchResult is null || !f.MatchResult.Success) { continue; }
+                var match = f.MatchResult.Groups[videoFilter.GroupIndex];
+                f.MatchStart = match.Index;
+                f.MatchLength = match.Length;
+                Debug.WriteLine(match.Value);
+            }
+        }
+
+        [GeneratedRegex("\\d")]
+        private static partial Regex DigitRegex();
+    }
 }

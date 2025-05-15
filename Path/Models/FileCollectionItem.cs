@@ -4,24 +4,13 @@ using System.Text.RegularExpressions;
 
 namespace SubtitleRename.Models
 {
-    enum FileType
-    {
-        Video,
-        Subtitle,
-    }
-
-    class FileCollectionItem(FileInfo file, FileType fileType)
+    sealed class FileCollectionItem(FileInfo file)
     {
         public FileInfo FileInfo { get; } = file;
         public FileInfo? TargetFileInfo { get; set; }
-        public FileType FileType { get; } = fileType;
         public Match? MatchResult { get; set; }
-        public string ShowInfo
-        {
-            get
-            {
-                return (TargetFileInfo is null) ? FileInfo.Name : TargetFileInfo.Name;
-            }
-        }
+        public string ShowInfo => (TargetFileInfo is null) ? FileInfo.Name : TargetFileInfo.Name;
+        public int MatchStart {  get; set; } = 0;
+        public int MatchLength { get; set; } = 0;
     }
 }

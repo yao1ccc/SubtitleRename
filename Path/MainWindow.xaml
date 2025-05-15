@@ -16,8 +16,8 @@
                 <ResourceDictionary Source="/Styles/TextBoxDictionary.xaml" />
                 <ResourceDictionary Source="/Styles/LoopButtonDictionary.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <CollectionViewSource x:Key="videoCollection" Source="{Binding VideoCollectionShows}" />
-            <CollectionViewSource x:Key="subtitleCollection" Source="{Binding SubtitleCollectionShows}" />
+            <CollectionViewSource x:Key="videoCollection" Source="{Binding VideoCollectionShows, Mode=OneWay}" />
+            <CollectionViewSource x:Key="subtitleCollection" Source="{Binding SubtitleCollectionShows, Mode=OneWay}" />
         </ResourceDictionary>
     </Window.Resources>
     <Window.DataContext>
@@ -102,9 +102,9 @@
             FontSize="15"
             Foreground="White">
             <ItemsControl.ItemsSource>
-                <CompositeCollection x:Name="collection">
-                    <CollectionContainer Collection="{Binding Source={StaticResource subtitleCollection}}" />
-                    <CollectionContainer Collection="{Binding Source={StaticResource videoCollection}}" />
+                <CompositeCollection>
+                    <CollectionContainer Collection="{Binding Mode=OneWay, Source={StaticResource subtitleCollection}}" />
+                    <CollectionContainer Collection="{Binding Mode=OneWay, Source={StaticResource videoCollection}}" />
                 </CompositeCollection>
             </ItemsControl.ItemsSource>
             <ItemsControl.Template>
@@ -129,7 +129,11 @@
                             Height="15"
                             Margin="3,0"
                             Fill="LightBlue" />
-                        <TextBlock Text="{Binding ShowInfo}" />
+                        <TextBlock>
+                            <Run Text="{Binding Mode=OneWay, Converter={x:Static vm:TextPartConverter.Instance}, ConverterParameter=before}" />
+                            <Run Background="Yellow" Text="{Binding Mode=OneWay, Converter={x:Static vm:TextPartConverter.Instance}, ConverterParameter=highlight}" />
+                            <Run Text="{Binding Mode=OneWay, Converter={x:Static vm:TextPartConverter.Instance}, ConverterParameter=after}" />
+                        </TextBlock>
                     </StackPanel>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>

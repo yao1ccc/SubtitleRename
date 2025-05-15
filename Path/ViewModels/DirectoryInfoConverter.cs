@@ -3,9 +3,10 @@ using System.Windows.Data;
 
 namespace SubtitleRename.ViewModels
 {
-    public class DirectoryInfoConverter : IValueConverter
+    sealed class DirectoryInfoConverter : IValueConverter
     {
-        public static DirectoryInfoConverter Instance = new();
+        public static DirectoryInfoConverter Instance { get; } = new();
+
         public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) {
             return value switch
             {

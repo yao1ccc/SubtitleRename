@@ -2,11 +2,10 @@
 
 namespace SubtitleRename.Models
 {
-    class RegexFilter
+    sealed class RegexFilter
     {
         public readonly Regex regex;
         private readonly int[] groups;
-        private int index = 0;
 
         public RegexFilter(Regex re) {
             regex = re;
@@ -14,17 +13,14 @@ namespace SubtitleRename.Models
         }
 
         public void Next() {
-            index = (index + 1) % groups.Length;
+            GroupIndex = (GroupIndex + 1) % groups.Length;
         }
 
         public void Previous() {
-            index = (index - 1) % groups.Length;
+            GroupIndex = (GroupIndex - 1) % groups.Length;
         }
 
-        public void SetIndex(int i) {
-            index = i;
-        }
-
+        public int GroupIndex { get; set; } = 0;
         public override string ToString() => regex.ToString();
     }
 }

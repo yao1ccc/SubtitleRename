@@ -1,5 +1,0 @@
-﻿
-namespace SubtitleRename.Models
-{
-
-}
