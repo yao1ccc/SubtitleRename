@@ -16,8 +16,6 @@
                 <ResourceDictionary Source="/Styles/TextBoxDictionary.xaml" />
                 <ResourceDictionary Source="/Styles/LoopButtonDictionary.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <CollectionViewSource x:Key="videoCollection" Source="{Binding VideoCollectionShows, Mode=OneWay}" />
-            <CollectionViewSource x:Key="subtitleCollection" Source="{Binding SubtitleCollectionShows, Mode=OneWay}" />
         </ResourceDictionary>
     </Window.Resources>
     <Window.DataContext>
@@ -100,13 +98,8 @@
             Grid.Row="2"
             Margin="5"
             FontSize="15"
-            Foreground="White">
-            <ItemsControl.ItemsSource>
-                <CompositeCollection>
-                    <CollectionContainer Collection="{Binding Mode=OneWay, Source={StaticResource subtitleCollection}}" />
-                    <CollectionContainer Collection="{Binding Mode=OneWay, Source={StaticResource videoCollection}}" />
-                </CompositeCollection>
-            </ItemsControl.ItemsSource>
+            Foreground="White"
+            ItemsSource="{Binding LinqBinding, Mode=OneWay}">
             <ItemsControl.Template>
                 <ControlTemplate TargetType="{x:Type ItemsControl}">
                     <Border
@@ -129,11 +122,7 @@
                             Height="15"
                             Margin="3,0"
                             Fill="LightBlue" />
-                        <TextBlock>
-                            <Run Text="{Binding Mode=OneWay, Converter={x:Static vm:TextPartConverter.Instance}, ConverterParameter=before}" />
-                            <Run Background="Yellow" Text="{Binding Mode=OneWay, Converter={x:Static vm:TextPartConverter.Instance}, ConverterParameter=highlight}" />
-                            <Run Text="{Binding Mode=OneWay, Converter={x:Static vm:TextPartConverter.Instance}, ConverterParameter=after}" />
-                        </TextBlock>
+                        <TextBlock Text="{Binding Path=FileInfo}" />
                     </StackPanel>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>

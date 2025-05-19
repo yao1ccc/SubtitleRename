@@ -9,7 +9,8 @@ namespace SubtitleRename.ViewModels
     {
         public static RegexConverter Instance { get; } = new();
 
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
+        public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
+        {
             return value switch
             {
                 RegexFilter regex => regex.ToString(),
@@ -17,7 +18,8 @@ namespace SubtitleRename.ViewModels
             };
         }
 
-        public object? ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
+        public object? ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        {
             if (value is string s && !string.IsNullOrEmpty(s))
             {
                 try
@@ -25,7 +27,7 @@ namespace SubtitleRename.ViewModels
                     Regex regex = new(s);
                     return new RegexFilter(regex);
                 }
-                catch 
+                catch
                 {
                     return new ArgumentException("Regex err");
                 }

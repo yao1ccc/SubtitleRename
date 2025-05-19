@@ -1,10 +1,7 @@
-﻿using System.IO;
-using SubtitleRename.Models;
+﻿using System.ComponentModel;
+using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
-using System.ComponentModel;
-using System.Text.RegularExpressions;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
+using SubtitleRename.Models;
 
 namespace SubtitleRename.ViewModels
 {
@@ -12,39 +9,40 @@ namespace SubtitleRename.ViewModels
     {
         public List<string> SubtitleSuffixes
         {
-            get => subtitleSuffixes;
+            get => Subtitle.Suffixes;
             set
             {
-                subtitleSuffixes = value;
-                PathUpdate();
+                Subtitle.Suffixes = value;
+                OnPropertyChanged(nameof(LinqBinding));
             }
         }
+
         public List<string> VideoSuffixes
         {
-            get => videoSuffixes;
+            get => Video.Suffixes;
             set
             {
-                videoSuffixes = value;
-                PathUpdate();
+                Video.Suffixes = value;
+                OnPropertyChanged(nameof(LinqBinding));
             }
         }
         public RegexFilter? SubtitleFilter
         {
-            get { return subtitleFilter; }
+            get => Subtitle.Filter;
             set
             {
-                subtitleFilter = value;
-                SubtitleFilterUpdate();
+                Subtitle.Filter = value;
+                OnPropertyChanged(nameof(LinqBinding));
             }
         }
 
         public RegexFilter? VideoFilter
         {
-            get { return videoFilter; }
+            get => Video.Filter;
             set
             {
-                videoFilter = value;
-                VideoFilterUpdate();
+                Video.Filter = value;
+                OnPropertyChanged(nameof(LinqBinding));
             }
         }
 
@@ -53,12 +51,19 @@ namespace SubtitleRename.ViewModels
             get => rootFolder;
             set
             {
-                SetProperty(ref rootFolder, value);
-                PathUpdate();
+                SetProperty(ref rootFolder,value);
+                Video.PathUpdate();
+                Subtitle.PathUpdate();
+                OnPropertyChanged(nameof(LinqBinding));
             }
         }
-        public ObservableCollection<FileCollectionItem> SubtitleCollectionShows { get; set; } = [];
-        public ObservableCollection<FileCollectionItem> VideoCollectionShows { get; set; } = [];
+
+        public IEnumerable<FileCollectionItem> LinqBinding =>
+            Subtitle.FileCollections.Concat(Video.FileCollections).OrderBy(x => x.OrderInfo);
+
+        private DirectoryInfo? rootFolder;
+        private readonly FileCollection Subtitle;
+        private readonly FileCollection Video;
         public string Error => string.Empty;
 
         public string this[string columnName]
@@ -67,146 +72,25 @@ namespace SubtitleRename.ViewModels
             {
                 return columnName switch
                 {
-                    nameof(SubtitleSuffixes) or nameof(VideoSuffixes) =>
-                        VideoSuffixes.Any(SubtitleSuffixes.Contains) ?
-                        "suffix conflict" : string.Empty,
-                    nameof(RootFolder) =>
-                        RootFolder is not null && !RootFolder.Exists ?
-                        "folder not exist" : string.Empty,
+                    nameof(SubtitleSuffixes) or nameof(VideoSuffixes) => VideoSuffixes.Any(
+                        SubtitleSuffixes.Contains
+                    )
+                        ? "suffix conflict"
+                        : string.Empty,
+                    nameof(RootFolder) => RootFolder is not null && !RootFolder.Exists
+                        ? "folder not exist"
+                        : string.Empty,
                     _ => string.Empty,
                 };
             }
         }
 
-        private DirectoryInfo? rootFolder;
-        private List<string> subtitleSuffixes = ["srt", "ass", "ssa"];
-        private List<string> videoSuffixes = ["mkv", "mp4"];
-        private RegexFilter? videoFilter;
-        private RegexFilter? subtitleFilter;
-
-        private void VideoFilterUpdate() {
-
-            if (VideoCollectionShows.Count == 0 || videoFilter is null)
-            {
-                return;
-            }
-
-            videoFilter.GroupIndex = 0;
-
-            foreach (var f in VideoCollectionShows)
-            {
-                f.MatchResult = videoFilter.regex.Match(f.FileInfo.Name);
-            }
-
-            var sample = VideoCollectionShows.FirstOrDefault();
-            if (sample is not null && sample.MatchResult is not null && sample.MatchResult.Success)
-            {
-                for (int i = 1; i < sample.MatchResult.Groups.Count; i++)
-                {
-                    var match = DigitRegex().Match(sample.MatchResult.Groups[i].Value);
-                    if (match.Success)
-                    {
-                        videoFilter.GroupIndex = i;
-                        Debug.WriteLine($"Index:{i} all:{sample.MatchResult.Value} value:{sample.MatchResult.Groups[i].Value}");
-                        break;
-                    }
-                }
-            }
-
-            VideoIndexUpdate();
+        public MainViewModel()
+        {
+            Subtitle = new(() => rootFolder);
+            Video = new(() => rootFolder);
+            Subtitle.Suffixes = ["ass", "ssa", "srt"];
+            Video.Suffixes = ["mkv", "mp4"];
         }
-
-        private void SubtitleFilterUpdate() {
-
-            if (SubtitleCollectionShows.Count == 0 || subtitleFilter is null)
-            {
-                return;
-            }
-
-            subtitleFilter.GroupIndex = 0;
-
-            foreach (var f in SubtitleCollectionShows)
-            {
-                f.MatchResult = subtitleFilter.regex.Match(f.FileInfo.Name);
-            }
-
-            var sample = SubtitleCollectionShows.FirstOrDefault();
-            if (sample is not null && sample.MatchResult is not null && sample.MatchResult.Success)
-            {
-                for (int i = 1; i < sample.MatchResult.Groups.Count; i++)
-                {
-                    var match = DigitRegex().Match(sample.MatchResult.Groups[i].Value);
-                    if (match.Success)
-                    {
-                        subtitleFilter.GroupIndex = i;
-                        Debug.WriteLine($"Index:{i} all:{sample.MatchResult.Value} value:{sample.MatchResult.Groups[i].Value}");
-                        break;
-                    }
-                }
-            }
-
-            SubtitleIndexUpdate();
-        }
-
-        private void PathUpdate() {
-
-            SubtitleCollectionShows.Clear();
-            VideoCollectionShows.Clear();
-
-            if (RootFolder is null)
-            {
-                return;
-            }
-
-            foreach (string suffix in SubtitleSuffixes)
-            {
-                foreach (var f in RootFolder.GetFiles("*." + suffix))
-                {
-                    SubtitleCollectionShows.Add(new FileCollectionItem(f));
-                    Debug.WriteLine(f.Name);
-                }
-            }
-
-            foreach (string suffix in VideoSuffixes)
-            {
-                foreach (var f in RootFolder.GetFiles("*." + suffix))
-                {
-                    VideoCollectionShows.Add(new FileCollectionItem(f));
-                    Debug.WriteLine(f.Name);
-                }
-            }
-
-            VideoFilterUpdate();
-            SubtitleFilterUpdate();
-        }
-        private void SubtitleIndexUpdate() {
-
-            if (subtitleFilter is null) { return; }
-
-            foreach (var f in SubtitleCollectionShows)
-            {
-                if (f.MatchResult is null) { continue; }
-                var match = f.MatchResult.Groups[subtitleFilter.GroupIndex];
-                f.MatchStart = match.Index;
-                f.MatchLength = match.Length;
-                Debug.WriteLine(match.Value);
-            }
-        }
-        private void VideoIndexUpdate() {
-
-            if (videoFilter is null) { return; }
-
-            foreach (var f in VideoCollectionShows)
-            {
-                if (f.MatchResult is null || !f.MatchResult.Success) { continue; }
-                var match = f.MatchResult.Groups[videoFilter.GroupIndex];
-                f.MatchStart = match.Index;
-                f.MatchLength = match.Length;
-                Debug.WriteLine(match.Value);
-            }
-        }
-
-        [GeneratedRegex("\\d")]
-        private static partial Regex DigitRegex();
     }
 }
