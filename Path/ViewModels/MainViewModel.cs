@@ -1,6 +1,5 @@
 ﻿using System.ComponentModel;
 using System.IO;
-using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using SubtitleRename.Models;
 
@@ -17,7 +16,6 @@ namespace SubtitleRename.ViewModels
                 OnPropertyChanged(nameof(LINQBinding));
             }
         }
-
         public List<string> VideoSuffixes
         {
             get => Video.Suffixes;
@@ -36,7 +34,6 @@ namespace SubtitleRename.ViewModels
                 OnPropertyChanged(nameof(LINQBinding));
             }
         }
-
         public RegexFilter? VideoFilter
         {
             get => Video.Filter;
@@ -46,30 +43,26 @@ namespace SubtitleRename.ViewModels
                 OnPropertyChanged(nameof(LINQBinding));
             }
         }
-
         public DirectoryInfo? RootFolder
         {
             get => rootFolder;
             set
             {
                 SetProperty(ref rootFolder, value);
-                Video.PathUpdate();
-                Subtitle.PathUpdate();
+                Video.OnDirectoryChanged();
+                Subtitle.OnDirectoryChanged();
                 OnPropertyChanged(nameof(LINQBinding));
             }
         }
 
         public IEnumerable<HighLightText> LINQBinding =>
-            Subtitle.FileCollections
-                .Concat(Video.FileCollections)
-                .OrderBy(x => x.OrderInfo)
-                .Select(x => (HighLightText)x);
+            Subtitle.HighLightTexts.Concat(Video.HighLightTexts);
 
         private DirectoryInfo? rootFolder;
         private readonly FileCollection Subtitle;
         private readonly FileCollection Video;
-        public string Error => string.Empty;
 
+        public string Error => string.Empty;
         public string this[string columnName]
         {
             get

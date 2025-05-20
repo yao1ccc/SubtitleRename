@@ -9,7 +9,23 @@ namespace SubtitleRename.Models
         public FileInfo? TargetFileInfo { get; set; }
         public Match? MatchResult { get; set; }
         public string OrderInfo => (TargetFileInfo is null) ? FileInfo.Name : TargetFileInfo.Name;
-        public int MatchStart { get; set; }
-        public int MatchLength { get; set; }
+        public HighLightText ToHighLightText(int i)
+        {
+            if (MatchResult is null)
+            {
+                return ToHighLightText();
+            }
+            return (
+                new HighLightText(
+                    FileInfo.Name,
+                    MatchResult.Groups[i].Index,
+                    MatchResult.Groups[i].Length
+                )
+            );
+        }
+        public HighLightText ToHighLightText()
+        {
+            return new(FileInfo.Name, 0, 0);
+        }
     }
 }

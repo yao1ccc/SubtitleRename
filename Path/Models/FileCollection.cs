@@ -8,11 +8,11 @@ namespace SubtitleRename.Models
     {
         public RegexFilter? Filter
         {
-            get => filter;
+            get => regexFilter;
             set
             {
-                filter = value;
-                FilterUpdate();
+                regexFilter = value;
+                OnRegexChanged();
             }
         }
         public List<string> Suffixes
@@ -21,7 +21,7 @@ namespace SubtitleRename.Models
             set
             {
                 suffixes = value;
-                PathUpdate();
+                OnSuffixChanged();
             }
         }
         public List<FileCollectionItem> FileCollections
@@ -30,13 +30,25 @@ namespace SubtitleRename.Models
             set => fileCollections = value;
         }
 
+        public IEnumerable<HighLightText> HighLightTexts =>
+            fileCollections.Select(x =>
+                (regexFilter is null)
+                    ? x.ToHighLightText()
+                    : x.ToHighLightText(regexFilter.GroupIndex)
+            );
+
         private readonly Func<DirectoryInfo?> directoryGetter = func;
-        private RegexFilter? filter;
+        private RegexFilter? regexFilter;
         private List<string> suffixes = [];
         private List<FileCollectionItem> fileCollections = [];
         private DirectoryInfo? DirectoryHandler => directoryGetter.Invoke();
 
-        public void PathUpdate()
+        public void OnDirectoryChanged()
+        {
+            OnSuffixChanged();
+        }
+
+        private void OnSuffixChanged()
         {
             fileCollections.Clear();
 
@@ -47,25 +59,25 @@ namespace SubtitleRename.Models
 
             foreach (string s in suffixes)
             {
-                foreach (var f in DirectoryHandler.GetFiles("*." + s))
-                {
-                    FileCollections.Add(new FileCollectionItem(f));
-                    Debug.WriteLine(f.Name);
-                }
+                fileCollections.AddRange(
+                    DirectoryHandler
+                        .GetFiles("*." + s)
+                        .ToList()
+                        .ConvertAll(x => new FileCollectionItem(x))
+                );
             }
 
-            FilterUpdate();
+            OnRegexChanged();
         }
 
-        private void FilterUpdate()
+        private void OnRegexChanged()
         {
-            if (filter is null)
+            if (regexFilter is null)
             {
                 foreach (var f in fileCollections)
                 {
                     f.MatchResult = null;
                 }
-                IndexUpdate();
                 return;
             }
 
@@ -74,13 +86,13 @@ namespace SubtitleRename.Models
                 return;
             }
 
-            filter.GroupIndex = 0;
+            regexFilter.GroupIndex = 0;
 
             foreach (var f in FileCollections)
             {
-                if (filter.regex.Match(f.FileInfo.Name).Success)
+                if (regexFilter.regex.Match(f.FileInfo.Name).Success)
                 {
-                    f.MatchResult = filter.regex.Match(f.FileInfo.Name);
+                    f.MatchResult = regexFilter.regex.Match(f.FileInfo.Name);
                 }
             }
 
@@ -92,31 +104,13 @@ namespace SubtitleRename.Models
                     var match = DigitRegex().Match(sample.MatchResult.Groups[i].Value);
                     if (match.Success)
                     {
-                        filter.GroupIndex = i;
+                        regexFilter.GroupIndex = i;
                         Debug.WriteLine(
                             $"Index:{i} all:{sample.MatchResult.Value} value:{sample.MatchResult.Groups[i].Value}"
                         );
                         break;
                     }
                 }
-            }
-            IndexUpdate();
-        }
-
-        private void IndexUpdate()
-        {
-            foreach (var f in fileCollections)
-            {
-                if (f.MatchResult is null)
-                {
-                    f.MatchStart = 0;
-                    f.MatchLength = 0;
-                    continue;
-                }
-                var match = f.MatchResult.Groups[filter!.GroupIndex];
-                f.MatchStart = match.Index;
-                f.MatchLength = match.Length;
-                Debug.WriteLine(match.Value);
             }
         }
 
