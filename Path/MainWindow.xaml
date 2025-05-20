@@ -99,7 +99,7 @@
             Margin="5"
             FontSize="15"
             Foreground="White"
-            ItemsSource="{Binding LinqBinding, Mode=OneWay}">
+            ItemsSource="{Binding LINQBinding, Mode=OneWay}">
             <ItemsControl.Template>
                 <ControlTemplate TargetType="{x:Type ItemsControl}">
                     <Border
@@ -122,7 +122,7 @@
                             Height="15"
                             Margin="3,0"
                             Fill="LightBlue" />
-                        <TextBlock Text="{Binding Path=FileInfo}" />
+                        <TextBlock vm:TextBlockHelper.RichText="{Binding}" />
                     </StackPanel>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>

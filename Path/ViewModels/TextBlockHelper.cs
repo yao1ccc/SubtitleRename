@@ -1,25 +1,61 @@
 ﻿using System.Windows;
+using System.Windows.Controls;
+using System.Windows.Documents;
+using System.Windows.Media;
+using SubtitleRename.Models;
 
 namespace SubtitleRename.ViewModels
 {
     class TextBlockHelper
     {
-        public static string GetHighlightText(DependencyObject obj)
+        public static HighLightText GetRichText(DependencyObject obj) =>
+            (HighLightText)obj.GetValue(RichText);
+
+        public static void SetRichText(DependencyObject obj, HighLightText value)
         {
-            return (string)obj.GetValue(HighlightTextProperty);
+            if (obj is TextBlock textBlock)
+            {
+                textBlock.SetValue(RichText, value);
+            }
         }
 
-        public static void SetHighlightText(DependencyObject obj, string value)
+        public static void OnRichTextChanged(
+            DependencyObject obj,
+            DependencyPropertyChangedEventArgs e
+        )
         {
-            obj.SetValue(HighlightTextProperty, value);
+            if (obj is TextBlock textBlock)
+            {
+                HighLightText NewHighLightText = (HighLightText)e.NewValue;
+                HighLightText OldHighLightText = (HighLightText)e.OldValue;
+
+                if (NewHighLightText.Text != OldHighLightText.Text)
+                {
+                    textBlock.Text = NewHighLightText.Text;
+                }
+
+                if (NewHighLightText.Start == 0 || NewHighLightText.Length == 0)
+                {
+                    textBlock.Background = null;
+                }
+
+                TextPointer Start = textBlock.ContentStart.GetPositionAtOffset(
+                    NewHighLightText.Start + 1
+                );
+                TextPointer End = Start.GetPositionAtOffset(NewHighLightText.Length);
+                new TextRange(Start, End).ApplyPropertyValue(
+                    TextElement.BackgroundProperty,
+                    new SolidColorBrush(Colors.CornflowerBlue)
+                );
+            }
         }
 
-        public static readonly DependencyProperty HighlightTextProperty =
-            DependencyProperty.RegisterAttached(
-                "HighlightText",
-                typeof(string),
-                typeof(TextBlockHelper),
-                new PropertyMetadata(0)
-            );
+        // Using a DependencyProperty as the backing store for Text.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty RichText = DependencyProperty.RegisterAttached(
+            "RichText",
+            typeof(HighLightText),
+            typeof(TextBlockHelper),
+            new PropertyMetadata(new HighLightText("", 0, 0), OnRichTextChanged)
+        );
     }
 }

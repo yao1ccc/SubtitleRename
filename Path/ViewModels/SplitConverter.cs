@@ -23,7 +23,7 @@ namespace SubtitleRename.ViewModels
                 string Input when !string.IsNullOrWhiteSpace(Input) => Input
                     .Split([' '], StringSplitOptions.RemoveEmptyEntries)
                     .ToList(),
-                _ => throw new ArgumentException("ToList err"),
+                _ => new ArgumentException("ToList err"),
             };
         }
     }

@@ -59,7 +59,17 @@ namespace SubtitleRename.Models
 
         private void FilterUpdate()
         {
-            if (FileCollections.Count == 0 || filter is null)
+            if (filter is null)
+            {
+                foreach (var f in fileCollections)
+                {
+                    f.MatchResult = null;
+                }
+                IndexUpdate();
+                return;
+            }
+
+            if (FileCollections.Count == 0)
             {
                 return;
             }
@@ -90,24 +100,20 @@ namespace SubtitleRename.Models
                     }
                 }
             }
-
             IndexUpdate();
         }
 
         private void IndexUpdate()
         {
-            if (filter is null)
-            {
-                return;
-            }
-
             foreach (var f in fileCollections)
             {
                 if (f.MatchResult is null)
                 {
+                    f.MatchStart = 0;
+                    f.MatchLength = 0;
                     continue;
                 }
-                var match = f.MatchResult.Groups[filter.GroupIndex];
+                var match = f.MatchResult.Groups[filter!.GroupIndex];
                 f.MatchStart = match.Index;
                 f.MatchLength = match.Length;
                 Debug.WriteLine(match.Value);

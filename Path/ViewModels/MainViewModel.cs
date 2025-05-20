@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.IO;
+using System.Linq;
 using CommunityToolkit.Mvvm.ComponentModel;
 using SubtitleRename.Models;
 
@@ -13,7 +14,7 @@ namespace SubtitleRename.ViewModels
             set
             {
                 Subtitle.Suffixes = value;
-                OnPropertyChanged(nameof(LinqBinding));
+                OnPropertyChanged(nameof(LINQBinding));
             }
         }
 
@@ -23,7 +24,7 @@ namespace SubtitleRename.ViewModels
             set
             {
                 Video.Suffixes = value;
-                OnPropertyChanged(nameof(LinqBinding));
+                OnPropertyChanged(nameof(LINQBinding));
             }
         }
         public RegexFilter? SubtitleFilter
@@ -32,7 +33,7 @@ namespace SubtitleRename.ViewModels
             set
             {
                 Subtitle.Filter = value;
-                OnPropertyChanged(nameof(LinqBinding));
+                OnPropertyChanged(nameof(LINQBinding));
             }
         }
 
@@ -42,7 +43,7 @@ namespace SubtitleRename.ViewModels
             set
             {
                 Video.Filter = value;
-                OnPropertyChanged(nameof(LinqBinding));
+                OnPropertyChanged(nameof(LINQBinding));
             }
         }
 
@@ -51,15 +52,18 @@ namespace SubtitleRename.ViewModels
             get => rootFolder;
             set
             {
-                SetProperty(ref rootFolder,value);
+                SetProperty(ref rootFolder, value);
                 Video.PathUpdate();
                 Subtitle.PathUpdate();
-                OnPropertyChanged(nameof(LinqBinding));
+                OnPropertyChanged(nameof(LINQBinding));
             }
         }
 
-        public IEnumerable<FileCollectionItem> LinqBinding =>
-            Subtitle.FileCollections.Concat(Video.FileCollections).OrderBy(x => x.OrderInfo);
+        public IEnumerable<HighLightText> LINQBinding =>
+            Subtitle.FileCollections
+                .Concat(Video.FileCollections)
+                .OrderBy(x => x.OrderInfo)
+                .Select(x => (HighLightText)x);
 
         private DirectoryInfo? rootFolder;
         private readonly FileCollection Subtitle;

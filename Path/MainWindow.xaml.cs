@@ -1,5 +1,4 @@
-﻿using SubtitleRename.ViewModels;
-using System.Windows;
+﻿using System.Windows;
 
 namespace SubtitleRename
 {
