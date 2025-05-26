@@ -69,9 +69,13 @@
                 Orientation="Horizontal">
                 <Button
                     Margin="0,0,5,0"
+                    Command="{Binding VideoPreviousIndexCommand}"
                     Content="⇦"
                     Style="{StaticResource LoopButtonStyle}" />
-                <Button Content="⇨" Style="{StaticResource LoopButtonStyle}" />
+                <Button
+                    Command="{Binding VideoNextIndexCommand}"
+                    Content="⇨"
+                    Style="{StaticResource LoopButtonStyle}" />
             </StackPanel>
             <StackPanel
                 Grid.Row="1"
@@ -79,9 +83,13 @@
                 Orientation="Horizontal">
                 <Button
                     Margin="0,0,5,0"
+                    Command="{Binding SubtitlePreviousIndexCommand}"
                     Content="⇦"
                     Style="{StaticResource LoopButtonStyle}" />
-                <Button Content="⇨" Style="{StaticResource LoopButtonStyle}" />
+                <Button
+                    Command="{Binding SubtitleNextIndexCommand}"
+                    Content="⇨"
+                    Style="{StaticResource LoopButtonStyle}" />
             </StackPanel>
             <TextBox
                 Grid.Row="0"
@@ -133,6 +141,7 @@
             Height="40"
             Margin="5"
             HorizontalAlignment="Right"
+            Command="{Binding FileConverterCommand}"
             Content="转换"
             Foreground="White">
             <Button.Template>

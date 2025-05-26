@@ -3,7 +3,6 @@ using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SubtitleRename.Models;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace SubtitleRename.ViewModels
 {
@@ -15,7 +14,6 @@ namespace SubtitleRename.ViewModels
             set
             {
                 Subtitle.Suffixes = value;
-                Subtitle.OnTargetFileUpdate(Video);
                 OnPropertyChanged(nameof(LINQBinding));
             }
         }
@@ -25,7 +23,6 @@ namespace SubtitleRename.ViewModels
             set
             {
                 Video.Suffixes = value;
-                Subtitle.OnTargetFileUpdate(Video);
                 OnPropertyChanged(nameof(LINQBinding));
             }
         }
@@ -35,7 +32,6 @@ namespace SubtitleRename.ViewModels
             set
             {
                 Subtitle.Filter = value;
-                Subtitle.OnTargetFileUpdate(Video);
                 OnPropertyChanged(nameof(LINQBinding));
             }
         }
@@ -45,7 +41,6 @@ namespace SubtitleRename.ViewModels
             set
             {
                 Video.Filter = value;
-                Subtitle.OnTargetFileUpdate(Video);
                 OnPropertyChanged(nameof(LINQBinding));
             }
         }
@@ -115,8 +110,10 @@ namespace SubtitleRename.ViewModels
         }
 
         [RelayCommand]
-        public void Run()
+        public void FileConverter()
         {
+            Subtitle.OnTargetFileUpdate(Video);
+
             foreach (var f in Subtitle.FileCollections)
             {
                 if (f.TargetName is null || rootFolder is null)
@@ -125,6 +122,11 @@ namespace SubtitleRename.ViewModels
                 }
                 f.FileInfo.MoveTo(Path.Combine(rootFolder.ToString(), f.TargetName));
             }
+
+            Subtitle.OnDirectoryChanged();
+            Subtitle.Filter = null;
+            Video.Filter = null;
+            OnPropertyChanged(nameof(LINQBinding));
         }
 
         public MainViewModel()
