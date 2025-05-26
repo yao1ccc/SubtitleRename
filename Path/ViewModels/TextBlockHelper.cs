@@ -55,7 +55,7 @@ namespace SubtitleRename.ViewModels
             "RichText",
             typeof(HighLightText),
             typeof(TextBlockHelper),
-            new PropertyMetadata(new HighLightText("", 0, 0), OnRichTextChanged)
+            new PropertyMetadata(new HighLightText("", 0, 0, FileType.Video), OnRichTextChanged)
         );
     }
 }

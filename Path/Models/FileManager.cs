@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace SubtitleRename.Models
 {
-    sealed partial class FileCollection(Func<DirectoryInfo?> func)
+    sealed partial class FileManager(Func<DirectoryInfo?> func, FileType fileType)
     {
         public RegexFilter? Filter
         {
@@ -33,8 +33,8 @@ namespace SubtitleRename.Models
         public IEnumerable<HighLightText> HighLightTexts =>
             fileCollections.Select(x =>
                 (regexFilter is null)
-                    ? x.ToHighLightText()
-                    : x.ToHighLightText(regexFilter.GroupIndex)
+                    ? x.ToHighLightText(fileType)
+                    : x.ToHighLightText(regexFilter.GroupIndex, fileType)
             );
 
         private readonly Func<DirectoryInfo?> directoryGetter = func;
@@ -42,6 +42,7 @@ namespace SubtitleRename.Models
         private List<string> suffixes = [];
         private List<FileCollectionItem> fileCollections = [];
         private DirectoryInfo? DirectoryHandler => directoryGetter.Invoke();
+        private readonly FileType fileType = fileType;
 
         public void OnDirectoryChanged()
         {
@@ -114,7 +115,7 @@ namespace SubtitleRename.Models
             }
         }
 
-        public void OnTargetFileUpdate(FileCollection other)
+        public void TargetNameUpdate(FileManager other)
         {
             if (regexFilter is null || other.regexFilter is null)
             {

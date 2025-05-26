@@ -9,23 +9,24 @@ namespace SubtitleRename.Models
         public string? TargetName { get; set; }
         public Match? MatchResult { get; set; }
         public string? MatchText(int i) => MatchResult?.Groups[i].Value;
-        public HighLightText ToHighLightText(int i)
+        public HighLightText ToHighLightText(int i, FileType fileType)
         {
             if (MatchResult is null)
             {
-                return ToHighLightText();
+                return ToHighLightText(fileType);
             }
             return (
                 new HighLightText(
                     FileInfo.Name,
                     MatchResult.Groups[i].Index,
-                    MatchResult.Groups[i].Length
+                    MatchResult.Groups[i].Length,
+                    fileType
                 )
             );
         }
-        public HighLightText ToHighLightText()
+        public HighLightText ToHighLightText(FileType fileType)
         {
-            return new(FileInfo.Name, 0, 0);
+            return new(FileInfo.Name, 0, 0, fileType);
         }
     }
 }

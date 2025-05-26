@@ -52,19 +52,19 @@ namespace SubtitleRename.ViewModels
                 SetProperty(ref rootFolder, value);
                 Video.OnDirectoryChanged();
                 Subtitle.OnDirectoryChanged();
-                Subtitle.OnTargetFileUpdate(Video);
+                Subtitle.TargetNameUpdate(Video);
                 OnPropertyChanged(nameof(LINQBinding));
             }
         }
 
         public IEnumerable<HighLightText> LINQBinding =>
-            Video
-                .HighLightTexts.Concat(Subtitle.HighLightTexts)
+            Video.HighLightTexts
+                .Concat(Subtitle.HighLightTexts)
                 .OrderBy(static x => x.Text.Substring(x.Start, x.Length));
 
         private DirectoryInfo? rootFolder;
-        private readonly FileCollection Subtitle;
-        private readonly FileCollection Video;
+        private readonly FileManager Subtitle;
+        private readonly FileManager Video;
 
         public string Error => string.Empty;
         public string this[string columnName] =>
@@ -112,7 +112,7 @@ namespace SubtitleRename.ViewModels
         [RelayCommand]
         public void FileConverter()
         {
-            Subtitle.OnTargetFileUpdate(Video);
+            Subtitle.TargetNameUpdate(Video);
 
             foreach (var f in Subtitle.FileCollections)
             {
@@ -123,16 +123,17 @@ namespace SubtitleRename.ViewModels
                 f.FileInfo.MoveTo(Path.Combine(rootFolder.ToString(), f.TargetName));
             }
 
-            Subtitle.OnDirectoryChanged();
             Subtitle.Filter = null;
             Video.Filter = null;
+            Subtitle.OnDirectoryChanged();
+            
             OnPropertyChanged(nameof(LINQBinding));
         }
 
         public MainViewModel()
         {
-            Subtitle = new(() => rootFolder);
-            Video = new(() => rootFolder);
+            Subtitle = new(() => rootFolder, FileType.Subtitle);
+            Video = new(() => rootFolder, FileType.Video);
             Subtitle.Suffixes = ["ass", "ssa", "srt"];
             Video.Suffixes = ["mkv", "mp4"];
         }
