@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel;
 using System.IO;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using SubtitleRename.Models;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace SubtitleRename.ViewModels
 {
@@ -13,6 +15,7 @@ namespace SubtitleRename.ViewModels
             set
             {
                 Subtitle.Suffixes = value;
+                Subtitle.OnTargetFileUpdate(Video);
                 OnPropertyChanged(nameof(LINQBinding));
             }
         }
@@ -22,6 +25,7 @@ namespace SubtitleRename.ViewModels
             set
             {
                 Video.Suffixes = value;
+                Subtitle.OnTargetFileUpdate(Video);
                 OnPropertyChanged(nameof(LINQBinding));
             }
         }
@@ -31,6 +35,7 @@ namespace SubtitleRename.ViewModels
             set
             {
                 Subtitle.Filter = value;
+                Subtitle.OnTargetFileUpdate(Video);
                 OnPropertyChanged(nameof(LINQBinding));
             }
         }
@@ -40,6 +45,7 @@ namespace SubtitleRename.ViewModels
             set
             {
                 Video.Filter = value;
+                Subtitle.OnTargetFileUpdate(Video);
                 OnPropertyChanged(nameof(LINQBinding));
             }
         }
@@ -51,34 +57,73 @@ namespace SubtitleRename.ViewModels
                 SetProperty(ref rootFolder, value);
                 Video.OnDirectoryChanged();
                 Subtitle.OnDirectoryChanged();
+                Subtitle.OnTargetFileUpdate(Video);
                 OnPropertyChanged(nameof(LINQBinding));
             }
         }
 
         public IEnumerable<HighLightText> LINQBinding =>
-            Subtitle.HighLightTexts.Concat(Video.HighLightTexts);
+            Video
+                .HighLightTexts.Concat(Subtitle.HighLightTexts)
+                .OrderBy(static x => x.Text.Substring(x.Start, x.Length));
 
         private DirectoryInfo? rootFolder;
         private readonly FileCollection Subtitle;
         private readonly FileCollection Video;
 
         public string Error => string.Empty;
-        public string this[string columnName]
-        {
-            get
+        public string this[string columnName] =>
+            columnName switch
             {
-                return columnName switch
+                nameof(SubtitleSuffixes) or nameof(VideoSuffixes) => VideoSuffixes.Any(
+                    SubtitleSuffixes.Contains
+                )
+                    ? "suffix conflict"
+                    : string.Empty,
+                nameof(RootFolder) => RootFolder is not null && !RootFolder.Exists
+                    ? "folder not exist"
+                    : string.Empty,
+                _ => string.Empty,
+            };
+
+        [RelayCommand]
+        public void SubtitleNextIndex()
+        {
+            Subtitle.Filter?.Next();
+            OnPropertyChanged(nameof(LINQBinding));
+        }
+
+        [RelayCommand]
+        public void SubtitlePreviousIndex()
+        {
+            Subtitle.Filter?.Previous();
+            OnPropertyChanged(nameof(LINQBinding));
+        }
+
+        [RelayCommand]
+        public void VideoNextIndex()
+        {
+            Video.Filter?.Next();
+            OnPropertyChanged(nameof(LINQBinding));
+        }
+
+        [RelayCommand]
+        public void VideoPreviousIndex()
+        {
+            Video.Filter?.Previous();
+            OnPropertyChanged(nameof(LINQBinding));
+        }
+
+        [RelayCommand]
+        public void Run()
+        {
+            foreach (var f in Subtitle.FileCollections)
+            {
+                if (f.TargetName is null || rootFolder is null)
                 {
-                    nameof(SubtitleSuffixes) or nameof(VideoSuffixes) => VideoSuffixes.Any(
-                        SubtitleSuffixes.Contains
-                    )
-                        ? "suffix conflict"
-                        : string.Empty,
-                    nameof(RootFolder) => RootFolder is not null && !RootFolder.Exists
-                        ? "folder not exist"
-                        : string.Empty,
-                    _ => string.Empty,
-                };
+                    return;
+                }
+                f.FileInfo.MoveTo(Path.Combine(rootFolder.ToString(), f.TargetName));
             }
         }
 

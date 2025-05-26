@@ -6,9 +6,9 @@ namespace SubtitleRename.Models
     sealed class FileCollectionItem(FileInfo file)
     {
         public FileInfo FileInfo { get; } = file;
-        public FileInfo? TargetFileInfo { get; set; }
+        public string? TargetName { get; set; }
         public Match? MatchResult { get; set; }
-        public string OrderInfo => (TargetFileInfo is null) ? FileInfo.Name : TargetFileInfo.Name;
+        public string? MatchText(int i) => MatchResult?.Groups[i].Value;
         public HighLightText ToHighLightText(int i)
         {
             if (MatchResult is null)

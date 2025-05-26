@@ -114,6 +114,34 @@ namespace SubtitleRename.Models
             }
         }
 
+        public void OnTargetFileUpdate(FileCollection other)
+        {
+            if (regexFilter is null || other.regexFilter is null)
+            {
+                return;
+            }
+
+            foreach (FileCollectionItem f in fileCollections)
+            {
+                if (f.MatchText(regexFilter.GroupIndex) is null)
+                {
+                    f.TargetName = null;
+                    continue;
+                }
+
+                FileCollectionItem? matchVideo = other.fileCollections.Find(x =>
+                    x.MatchText(other.regexFilter.GroupIndex) == f.MatchText(regexFilter.GroupIndex)
+                );
+
+                if (matchVideo is not null)
+                {
+                    f.TargetName =
+                        Path.GetFileNameWithoutExtension(matchVideo.FileInfo.ToString())
+                        + f.FileInfo.Extension;
+                }
+            }
+        }
+
         [GeneratedRegex("\\d")]
         private static partial Regex DigitRegex();
     }

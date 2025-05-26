@@ -1,9 +1,9 @@
 ﻿namespace SubtitleRename.Models
 {
-    struct HighLightText(string text, int start, int length)
+    record HighLightText(string Text, int Start, int Length)
     {
-        public string Text = text;
-        public int Start = start;
-        public int Length = length;
+        public string Text = Text;
+        public int Start = Start;
+        public int Length = Length;
     }
 }
