@@ -15,7 +15,7 @@ namespace SubtitleRename.Models
                 OnRegexChanged();
             }
         }
-        public List<string> Suffixes
+        public string[] Suffixes
         {
             get => suffixes;
             set
@@ -24,14 +24,10 @@ namespace SubtitleRename.Models
                 OnSuffixChanged();
             }
         }
-        public List<FileCollectionItem> FileCollections
-        {
-            get => fileCollections;
-            set => fileCollections = value;
-        }
+        public List<FileCollectionItem> FileCollections { get; set; } = [];
 
         public IEnumerable<HighLightText> HighLightTexts =>
-            fileCollections.Select(x =>
+            FileCollections.Select(x =>
                 (regexFilter is null)
                     ? x.ToHighLightText(fileType)
                     : x.ToHighLightText(regexFilter.GroupIndex, fileType)
@@ -39,8 +35,8 @@ namespace SubtitleRename.Models
 
         private readonly Func<DirectoryInfo?> directoryGetter = func;
         private RegexFilter? regexFilter;
-        private List<string> suffixes = [];
-        private List<FileCollectionItem> fileCollections = [];
+        private string[] suffixes = [];
+
         private DirectoryInfo? DirectoryHandler => directoryGetter.Invoke();
         private readonly FileType fileType = fileType;
 
@@ -51,7 +47,7 @@ namespace SubtitleRename.Models
 
         private void OnSuffixChanged()
         {
-            fileCollections.Clear();
+            FileCollections.Clear();
 
             if (DirectoryHandler is null)
             {
@@ -60,7 +56,7 @@ namespace SubtitleRename.Models
 
             foreach (string s in suffixes)
             {
-                fileCollections.AddRange(
+                FileCollections.AddRange(
                     DirectoryHandler
                         .GetFiles("*." + s)
                         .ToList()
@@ -75,7 +71,7 @@ namespace SubtitleRename.Models
         {
             if (regexFilter is null)
             {
-                foreach (var f in fileCollections)
+                foreach (var f in FileCollections)
                 {
                     f.MatchResult = null;
                 }
@@ -122,7 +118,7 @@ namespace SubtitleRename.Models
                 return;
             }
 
-            foreach (FileCollectionItem f in fileCollections)
+            foreach (FileCollectionItem f in FileCollections)
             {
                 if (f.MatchText(regexFilter.GroupIndex) is null)
                 {
@@ -130,7 +126,7 @@ namespace SubtitleRename.Models
                     continue;
                 }
 
-                FileCollectionItem? matchVideo = other.fileCollections.Find(x =>
+                FileCollectionItem? matchVideo = other.FileCollections.Find(x =>
                     x.MatchText(other.regexFilter.GroupIndex) == f.MatchText(regexFilter.GroupIndex)
                 );
 

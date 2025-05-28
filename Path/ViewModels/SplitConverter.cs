@@ -11,19 +11,25 @@ namespace SubtitleRename.ViewModels
         {
             return (value) switch
             {
-                List<string> list => string.Join(" ", list),
+                string[] list => string.Join(" ", list),
                 _ => throw new ArgumentException("List err"),
             };
         }
 
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object ConvertBack(
+            object value,
+            Type targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
             return value switch
             {
-                string Input when !string.IsNullOrWhiteSpace(Input) => Input
-                    .Split([' '], StringSplitOptions.RemoveEmptyEntries)
-                    .ToList(),
-                _ => new ArgumentException("ToList err"),
+                string Input when !string.IsNullOrWhiteSpace(Input) => Input.Split(
+                    [' '],
+                    StringSplitOptions.RemoveEmptyEntries
+                ),
+                _ => new ArgumentException("ToString[] err"),
             };
         }
     }

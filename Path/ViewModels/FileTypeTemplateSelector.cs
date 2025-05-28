@@ -4,7 +4,7 @@ using SubtitleRename.Models;
 
 namespace SubtitleRename.ViewModels
 {
-    class FileTypeTemplateSelector : DataTemplateSelector
+    sealed class FileTypeTemplateSelector : DataTemplateSelector
     {
         public static FileTypeTemplateSelector Instance { get; } = new();
 

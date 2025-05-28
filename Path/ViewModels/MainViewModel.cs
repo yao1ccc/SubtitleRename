@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using System.IO;
+using System.Text.RegularExpressions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SubtitleRename.Models;
@@ -8,7 +9,7 @@ namespace SubtitleRename.ViewModels
 {
     sealed partial class MainViewModel : ObservableObject, IDataErrorInfo
     {
-        public List<string> SubtitleSuffixes
+        public string[] SubtitleSuffixes
         {
             get => Subtitle.Suffixes;
             set
@@ -17,7 +18,7 @@ namespace SubtitleRename.ViewModels
                 OnPropertyChanged(nameof(LINQBinding));
             }
         }
-        public List<string> VideoSuffixes
+        public string[] VideoSuffixes
         {
             get => Video.Suffixes;
             set
@@ -52,14 +53,13 @@ namespace SubtitleRename.ViewModels
                 SetProperty(ref rootFolder, value);
                 Video.OnDirectoryChanged();
                 Subtitle.OnDirectoryChanged();
-                Subtitle.TargetNameUpdate(Video);
                 OnPropertyChanged(nameof(LINQBinding));
             }
         }
 
         public IEnumerable<HighLightText> LINQBinding =>
-            Video.HighLightTexts
-                .Concat(Subtitle.HighLightTexts)
+            Video
+                .HighLightTexts.Concat(Subtitle.HighLightTexts)
                 .OrderBy(static x => x.Text.Substring(x.Start, x.Length));
 
         private DirectoryInfo? rootFolder;
@@ -126,7 +126,7 @@ namespace SubtitleRename.ViewModels
             Subtitle.Filter = null;
             Video.Filter = null;
             Subtitle.OnDirectoryChanged();
-            
+
             OnPropertyChanged(nameof(LINQBinding));
         }
 
@@ -136,6 +136,11 @@ namespace SubtitleRename.ViewModels
             Video = new(() => rootFolder, FileType.Video);
             Subtitle.Suffixes = ["ass", "ssa", "srt"];
             Video.Suffixes = ["mkv", "mp4"];
+            Subtitle.Filter = new RegexFilter(DefaultRegex());
+            Video.Filter = new RegexFilter(DefaultRegex());
         }
+
+        [GeneratedRegex("[^\\d](\\d\\d)[^\\d]")]
+        private static partial Regex DefaultRegex();
     }
 }

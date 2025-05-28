@@ -6,10 +6,12 @@ using SubtitleRename.Models;
 
 namespace SubtitleRename.ViewModels
 {
-    class TextBlockHelper
+    sealed class TextBlockHelper
     {
-        public static HighLightText GetRichText(DependencyObject obj) =>
-            (HighLightText)obj.GetValue(RichText);
+        public static HighLightText GetRichText(DependencyObject obj)
+        {
+            return (HighLightText)obj.GetValue(RichText);
+        }
 
         public static void SetRichText(DependencyObject obj, HighLightText value)
         {
@@ -26,8 +28,8 @@ namespace SubtitleRename.ViewModels
         {
             if (obj is TextBlock textBlock)
             {
-                HighLightText NewHighLightText = (HighLightText)e.NewValue;
-                HighLightText OldHighLightText = (HighLightText)e.OldValue;
+                var NewHighLightText = (HighLightText)e.NewValue;
+                var OldHighLightText = (HighLightText)e.OldValue;
 
                 if (NewHighLightText.Text != OldHighLightText.Text)
                 {

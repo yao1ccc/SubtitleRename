@@ -12,19 +12,101 @@
     mc:Ignorable="av">
 
     <Window.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="/Styles/TextBoxDictionary.xaml" />
-                <ResourceDictionary Source="/Styles/LoopButtonDictionary.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
+        <Style x:Key="LoopButtonStyle" TargetType="{x:Type Button}">
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Grid>
+                            <Ellipse
+                                x:Name="Ellipse"
+                                Width="33"
+                                Height="33"
+                                Fill="#383838"
+                                Stroke="#FFABAdB3"
+                                StrokeThickness="1" />
+                            <Label
+                                x:Name="Lable"
+                                Margin="0,0,0,2.5"
+                                HorizontalAlignment="Center"
+                                Content="{TemplateBinding Content}"
+                                FontFamily="Noto Sans SC"
+                                FontSize="20"
+                                FontWeight="Bold"
+                                Foreground="#FFABAdB3" />
+                        </Grid>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter TargetName="Ellipse" Property="Stroke" Value="#FF7160E8" />
+                                <Setter TargetName="Lable" Property="Foreground" Value="#FF7160E8" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <Style TargetType="{x:Type TextBox}">
+            <Setter Property="Foreground" Value="White" />
+            <Setter Property="HorizontalContentAlignment" Value="Left" />
+            <Setter Property="AllowDrop" Value="true" />
+            <Setter Property="ScrollViewer.PanningMode" Value="VerticalFirst" />
+            <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="Padding" Value="5" />
+            <Setter Property="TextWrapping" Value="NoWrap" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="CaretBrush" Value="White" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type TextBox}">
+                        <Border
+                            x:Name="border"
+                            Background="#383838"
+                            BorderBrush="#FFABAdB3"
+                            BorderThickness="1"
+                            SnapsToDevicePixels="True">
+                            <ScrollViewer
+                                x:Name="PART_ContentHost"
+                                Focusable="false"
+                                HorizontalScrollBarVisibility="Hidden"
+                                VerticalScrollBarVisibility="Hidden" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsEnabled" Value="false">
+                                <Setter TargetName="border" Property="Opacity" Value="0.56" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#FF7160E8" />
+                            </Trigger>
+                            <Trigger Property="IsKeyboardFocused" Value="true">
+                                <Setter TargetName="border" Property="BorderBrush" Value="#FF7160E8" />
+                            </Trigger>
+                            <Trigger Property="Validation.HasError" Value="True">
+                                <Setter TargetName="border" Property="BorderBrush" Value="Red" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+            <Style.Triggers>
+                <MultiTrigger>
+                    <MultiTrigger.Conditions>
+                        <Condition Property="IsInactiveSelectionHighlightEnabled" Value="true" />
+                        <Condition Property="IsSelectionActive" Value="false" />
+                    </MultiTrigger.Conditions>
+                    <Setter Property="SelectionBrush" Value="#FF0078D7" />
+                </MultiTrigger>
+            </Style.Triggers>
+        </Style>
     </Window.Resources>
+
     <Window.DataContext>
         <vm:MainViewModel />
     </Window.DataContext>
 
     <Grid Margin="10">
         <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
             <RowDefinition Height="auto" />
             <RowDefinition Height="auto" />
             <RowDefinition Height="*" />
@@ -48,68 +130,63 @@
             <Grid.ColumnDefinitions>
                 <ColumnDefinition />
                 <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
                 <ColumnDefinition Width="200" />
             </Grid.ColumnDefinitions>
-            <Grid.RowDefinitions>
-                <RowDefinition />
-                <RowDefinition />
-            </Grid.RowDefinitions>
             <TextBox
-                Grid.Row="0"
                 Grid.Column="0"
                 Margin="5"
                 Text="{Binding VideoFilter, Converter={x:Static vm:RegexConverter.Instance}, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" />
+            <Button
+                Grid.Column="1"
+                Margin="0,0,5,0"
+                Command="{Binding VideoPreviousIndexCommand}"
+                Content="⇦"
+                Style="{StaticResource LoopButtonStyle}" />
+            <Button
+                Grid.Column="2"
+                Command="{Binding VideoNextIndexCommand}"
+                Content="⇨"
+                Style="{StaticResource LoopButtonStyle}" />
             <TextBox
-                Grid.Row="1"
+                Grid.Column="3"
+                Margin="5"
+                Text="{Binding VideoSuffixes, Converter={x:Static vm:SplitConverter.Instance}, ValidatesOnDataErrors=True}" />
+        </Grid>
+        <Grid Grid.Row="2">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="200" />
+            </Grid.ColumnDefinitions>
+            <TextBox
                 Grid.Column="0"
                 Margin="5"
                 Text="{Binding SubtitleFilter, Converter={x:Static vm:RegexConverter.Instance}, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" />
-            <StackPanel
-                Grid.Row="0"
+            <Button
                 Grid.Column="1"
-                Orientation="Horizontal">
-                <Button
-                    Margin="0,0,5,0"
-                    Command="{Binding VideoPreviousIndexCommand}"
-                    Content="⇦"
-                    Style="{StaticResource LoopButtonStyle}" />
-                <Button
-                    Command="{Binding VideoNextIndexCommand}"
-                    Content="⇨"
-                    Style="{StaticResource LoopButtonStyle}" />
-            </StackPanel>
-            <StackPanel
-                Grid.Row="1"
-                Grid.Column="1"
-                Orientation="Horizontal">
-                <Button
-                    Margin="0,0,5,0"
-                    Command="{Binding SubtitlePreviousIndexCommand}"
-                    Content="⇦"
-                    Style="{StaticResource LoopButtonStyle}" />
-                <Button
-                    Command="{Binding SubtitleNextIndexCommand}"
-                    Content="⇨"
-                    Style="{StaticResource LoopButtonStyle}" />
-            </StackPanel>
-            <TextBox
-                Grid.Row="0"
+                Margin="0,0,5,0"
+                Command="{Binding SubtitlePreviousIndexCommand}"
+                Content="⇦"
+                Style="{StaticResource LoopButtonStyle}" />
+            <Button
                 Grid.Column="2"
-                Margin="5"
-                Text="{Binding VideoSuffixes, Converter={x:Static vm:SplitConverter.Instance}, ValidatesOnDataErrors=True}" />
+                Command="{Binding SubtitleNextIndexCommand}"
+                Content="⇨"
+                Style="{StaticResource LoopButtonStyle}" />
             <TextBox
-                Grid.Row="1"
-                Grid.Column="2"
+                Grid.Column="3"
                 Margin="5"
                 Text="{Binding SubtitleSuffixes, Converter={x:Static vm:SplitConverter.Instance}, ValidatesOnDataErrors=True}" />
         </Grid>
         <ItemsControl
-            Grid.Row="2"
+            Grid.Row="3"
             Margin="5"
             FontSize="15"
             Foreground="White"
-            ItemsSource="{Binding LINQBinding, Mode=OneWay}"
-            ItemTemplateSelector="{x:Static vm:FileTypeTemplateSelector.Instance}">
+            ItemTemplateSelector="{x:Static vm:FileTypeTemplateSelector.Instance}"
+            ItemsSource="{Binding LINQBinding, Mode=OneWay}">
             <ItemsControl.Template>
                 <ControlTemplate TargetType="{x:Type ItemsControl}">
                     <Border
@@ -118,7 +195,7 @@
                         BorderBrush="#FFABADB3"
                         BorderThickness="1"
                         SnapsToDevicePixels="true">
-                        <ScrollViewer Focusable="false">
+                        <ScrollViewer Focusable="false" VerticalScrollBarVisibility="Hidden">
                             <ItemsPresenter SnapsToDevicePixels="True" />
                         </ScrollViewer>
                     </Border>
@@ -150,7 +227,7 @@
             </ItemsControl.Resources>
         </ItemsControl>
         <Button
-            Grid.Row="3"
+            Grid.Row="4"
             Width="100"
             Height="40"
             Margin="5"
