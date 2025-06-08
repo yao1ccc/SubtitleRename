@@ -238,7 +238,8 @@
                 Margin="5"
                 HorizontalAlignment="Right"
                 Command="{Binding FileConverterCommand}"
-                Content="转换"
+                Content="▷"
+                FontSize="25"
                 Foreground="White">
                 <Button.Template>
                     <ControlTemplate TargetType="{x:Type Button}">
