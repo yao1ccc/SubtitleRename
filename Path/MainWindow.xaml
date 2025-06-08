@@ -8,7 +8,10 @@
     xmlns:vm="clr-namespace:SubtitleRename.ViewModels"
     Width="600"
     Height="800"
+    AllowDrop="True"
     Background="#FF1F1F1F"
+    DragEnter="WindowDragEnter"
+    PreviewKeyDown="MainWindowKeyEnter"
     mc:Ignorable="av">
 
     <Window.Resources>
@@ -48,9 +51,7 @@
         <Style TargetType="{x:Type TextBox}">
             <Setter Property="Foreground" Value="White" />
             <Setter Property="HorizontalContentAlignment" Value="Left" />
-            <Setter Property="AllowDrop" Value="true" />
             <Setter Property="ScrollViewer.PanningMode" Value="VerticalFirst" />
-            <Setter Property="Stylus.IsFlicksEnabled" Value="False" />
             <Setter Property="FontSize" Value="15" />
             <Setter Property="Padding" Value="5" />
             <Setter Property="TextWrapping" Value="NoWrap" />
@@ -103,164 +104,183 @@
     <Window.DataContext>
         <vm:MainViewModel />
     </Window.DataContext>
-
-    <Grid Margin="10">
-        <Grid.RowDefinitions>
-            <RowDefinition Height="auto" />
-            <RowDefinition Height="auto" />
-            <RowDefinition Height="auto" />
-            <RowDefinition Height="*" />
-            <RowDefinition Height="auto" />
-        </Grid.RowDefinitions>
-        <TextBox Grid.Row="0" Margin="5">
-            <TextBox.Style>
-                <Style BasedOn="{StaticResource {x:Type TextBox}}" TargetType="{x:Type TextBox}">
-                    <Style.Triggers>
-                        <Trigger Property="IsFocused" Value="True">
-                            <Setter Property="Text" Value="{Binding RootFolder, Converter={x:Static vm:DirectoryInfoConverter.Instance}, Mode=OneWayToSource, ValidatesOnDataErrors=True, ValidatesOnExceptions=True}" />
-                        </Trigger>
-                        <Trigger Property="IsFocused" Value="False">
-                            <Setter Property="Text" Value="{Binding RootFolder, Converter={x:Static vm:DirectoryNameConverter.Instance}, Mode=OneWay}" />
-                        </Trigger>
-                    </Style.Triggers>
-                </Style>
-            </TextBox.Style>
-        </TextBox>
-        <Grid Grid.Row="1">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="200" />
-            </Grid.ColumnDefinitions>
+    <Grid>
+        <Grid Margin="10">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="auto" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="auto" />
+            </Grid.RowDefinitions>
             <TextBox
-                Grid.Column="0"
+                x:Name="RootText"
+                Grid.Row="0"
+                Margin="5">
+                <TextBox.Style>
+                    <Style BasedOn="{StaticResource {x:Type TextBox}}" TargetType="{x:Type TextBox}">
+                        <Style.Triggers>
+                            <Trigger Property="IsFocused" Value="True">
+                                <Setter Property="Text" Value="{Binding RootFolder, Converter={x:Static vm:DirectoryInfoConverter.Instance}, ValidatesOnExceptions=True}" />
+                            </Trigger>
+                            <Trigger Property="IsFocused" Value="False">
+                                <Setter Property="Text" Value="{Binding RootFolder, Converter={x:Static vm:DirectoryNameConverter.Instance}, Mode=OneWay}" />
+                            </Trigger>
+                        </Style.Triggers>
+                    </Style>
+                </TextBox.Style>
+            </TextBox>
+            <Grid Grid.Row="1">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="200" />
+                </Grid.ColumnDefinitions>
+                <TextBox
+                    Grid.Column="0"
+                    Margin="5"
+                    Text="{Binding VideoFilter, Converter={x:Static vm:RegexConverter.Instance}, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" />
+                <Button
+                    Grid.Column="1"
+                    Margin="0,0,5,0"
+                    Command="{Binding VideoPreviousIndexCommand}"
+                    Content="⇦"
+                    Style="{StaticResource LoopButtonStyle}" />
+                <Button
+                    Grid.Column="2"
+                    Command="{Binding VideoNextIndexCommand}"
+                    Content="⇨"
+                    Style="{StaticResource LoopButtonStyle}" />
+                <TextBox
+                    Grid.Column="3"
+                    Margin="5"
+                    Text="{Binding VideoSuffixes, Converter={x:Static vm:SplitConverter.Instance}, ValidatesOnDataErrors=True}" />
+            </Grid>
+            <Grid Grid.Row="2">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="200" />
+                </Grid.ColumnDefinitions>
+                <TextBox
+                    Grid.Column="0"
+                    Margin="5"
+                    Text="{Binding SubtitleFilter, Converter={x:Static vm:RegexConverter.Instance}, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" />
+                <Button
+                    Grid.Column="1"
+                    Margin="0,0,5,0"
+                    Command="{Binding SubtitlePreviousIndexCommand}"
+                    Content="⇦"
+                    Style="{StaticResource LoopButtonStyle}" />
+                <Button
+                    Grid.Column="2"
+                    Command="{Binding SubtitleNextIndexCommand}"
+                    Content="⇨"
+                    Style="{StaticResource LoopButtonStyle}" />
+                <TextBox
+                    Grid.Column="3"
+                    Margin="5"
+                    Text="{Binding SubtitleSuffixes, Converter={x:Static vm:SplitConverter.Instance}, ValidatesOnDataErrors=True}" />
+            </Grid>
+            <ItemsControl
+                x:Name="itemsControl"
+                Grid.Row="3"
                 Margin="5"
-                Text="{Binding VideoFilter, Converter={x:Static vm:RegexConverter.Instance}, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" />
+                FontSize="15"
+                Foreground="White"
+                ItemTemplateSelector="{x:Static vm:FileTypeTemplateSelector.Instance}"
+                ItemsSource="{Binding LINQBinding, Mode=OneWay}">
+                <ItemsControl.Template>
+                    <ControlTemplate TargetType="{x:Type ItemsControl}">
+                        <Border
+                            Padding="1"
+                            Background="#383838"
+                            BorderBrush="#FFABADB3"
+                            BorderThickness="1"
+                            SnapsToDevicePixels="true">
+                            <ScrollViewer Focusable="false" VerticalScrollBarVisibility="Hidden">
+                                <ItemsPresenter SnapsToDevicePixels="True" />
+                            </ScrollViewer>
+                        </Border>
+                    </ControlTemplate>
+                </ItemsControl.Template>
+                <ItemsControl.Resources>
+                    <DataTemplate x:Key="Video">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Ellipse
+                                x:Name="Ellipse"
+                                Grid.Column="0"
+                                Width="15"
+                                Height="15"
+                                Margin="3,0"
+                                Fill="LightBlue" />
+                            <TextBlock Grid.Column="1" vm:TextBlockHelper.RichText="{Binding}" />
+                        </Grid>
+                    </DataTemplate>
+                    <DataTemplate x:Key="Subtitle">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="auto" />
+                                <ColumnDefinition />
+                            </Grid.ColumnDefinitions>
+                            <Ellipse
+                                x:Name="Ellipse"
+                                Grid.Column="0"
+                                Width="15"
+                                Height="15"
+                                Margin="3,0"
+                                Fill="LightCoral" />
+                            <TextBlock Grid.Column="1" vm:TextBlockHelper.RichText="{Binding}" />
+                        </Grid>
+                    </DataTemplate>
+                </ItemsControl.Resources>
+            </ItemsControl>
             <Button
-                Grid.Column="1"
-                Margin="0,0,5,0"
-                Command="{Binding VideoPreviousIndexCommand}"
-                Content="⇦"
-                Style="{StaticResource LoopButtonStyle}" />
-            <Button
-                Grid.Column="2"
-                Command="{Binding VideoNextIndexCommand}"
-                Content="⇨"
-                Style="{StaticResource LoopButtonStyle}" />
-            <TextBox
-                Grid.Column="3"
+                Grid.Row="4"
+                Width="100"
+                Height="40"
                 Margin="5"
-                Text="{Binding VideoSuffixes, Converter={x:Static vm:SplitConverter.Instance}, ValidatesOnDataErrors=True}" />
+                HorizontalAlignment="Right"
+                Command="{Binding FileConverterCommand}"
+                Content="转换"
+                Foreground="White">
+                <Button.Template>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border
+                            x:Name="border"
+                            Background="Green"
+                            BorderBrush="#FFABAdB3"
+                            BorderThickness="1">
+                            <ContentPresenter
+                                x:Name="contentPresenter"
+                                Margin="1"
+                                HorizontalAlignment="Center"
+                                VerticalAlignment="Center"
+                                Focusable="False"
+                                RecognizesAccessKey="True"
+                                SnapsToDevicePixels="True" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="true">
+                                <Setter TargetName="border" Property="Background" Value="LightGreen" />
+                            </Trigger>
+                            <Trigger Property="IsPressed" Value="true">
+                                <Setter TargetName="border" Property="Background" Value="Green" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Button.Template>
+            </Button>
         </Grid>
-        <Grid Grid.Row="2">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="Auto" />
-                <ColumnDefinition Width="200" />
-            </Grid.ColumnDefinitions>
-            <TextBox
-                Grid.Column="0"
-                Margin="5"
-                Text="{Binding SubtitleFilter, Converter={x:Static vm:RegexConverter.Instance}, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" />
-            <Button
-                Grid.Column="1"
-                Margin="0,0,5,0"
-                Command="{Binding SubtitlePreviousIndexCommand}"
-                Content="⇦"
-                Style="{StaticResource LoopButtonStyle}" />
-            <Button
-                Grid.Column="2"
-                Command="{Binding SubtitleNextIndexCommand}"
-                Content="⇨"
-                Style="{StaticResource LoopButtonStyle}" />
-            <TextBox
-                Grid.Column="3"
-                Margin="5"
-                Text="{Binding SubtitleSuffixes, Converter={x:Static vm:SplitConverter.Instance}, ValidatesOnDataErrors=True}" />
-        </Grid>
-        <ItemsControl
-            Grid.Row="3"
-            Margin="5"
-            FontSize="15"
-            Foreground="White"
-            ItemTemplateSelector="{x:Static vm:FileTypeTemplateSelector.Instance}"
-            ItemsSource="{Binding LINQBinding, Mode=OneWay}">
-            <ItemsControl.Template>
-                <ControlTemplate TargetType="{x:Type ItemsControl}">
-                    <Border
-                        Padding="1"
-                        Background="#383838"
-                        BorderBrush="#FFABADB3"
-                        BorderThickness="1"
-                        SnapsToDevicePixels="true">
-                        <ScrollViewer Focusable="false" VerticalScrollBarVisibility="Hidden">
-                            <ItemsPresenter SnapsToDevicePixels="True" />
-                        </ScrollViewer>
-                    </Border>
-                </ControlTemplate>
-            </ItemsControl.Template>
-            <ItemsControl.Resources>
-                <DataTemplate x:Key="Video">
-                    <StackPanel Orientation="Horizontal">
-                        <Ellipse
-                            x:Name="Ellipse"
-                            Width="15"
-                            Height="15"
-                            Margin="3,0"
-                            Fill="LightBlue" />
-                        <TextBlock vm:TextBlockHelper.RichText="{Binding}" />
-                    </StackPanel>
-                </DataTemplate>
-                <DataTemplate x:Key="Subtitle">
-                    <StackPanel Orientation="Horizontal">
-                        <Ellipse
-                            x:Name="Ellipse"
-                            Width="15"
-                            Height="15"
-                            Margin="3,0"
-                            Fill="LightCoral" />
-                        <TextBlock vm:TextBlockHelper.RichText="{Binding}" />
-                    </StackPanel>
-                </DataTemplate>
-            </ItemsControl.Resources>
-        </ItemsControl>
-        <Button
-            Grid.Row="4"
-            Width="100"
-            Height="40"
-            Margin="5"
-            HorizontalAlignment="Right"
-            Command="{Binding FileConverterCommand}"
-            Content="转换"
-            Foreground="White">
-            <Button.Template>
-                <ControlTemplate TargetType="{x:Type Button}">
-                    <Border
-                        x:Name="border"
-                        Background="Green"
-                        BorderBrush="#FFABAdB3"
-                        BorderThickness="1">
-                        <ContentPresenter
-                            x:Name="contentPresenter"
-                            Margin="1"
-                            HorizontalAlignment="Center"
-                            VerticalAlignment="Center"
-                            Focusable="False"
-                            RecognizesAccessKey="True"
-                            SnapsToDevicePixels="True" />
-                    </Border>
-                    <ControlTemplate.Triggers>
-                        <Trigger Property="IsMouseOver" Value="true">
-                            <Setter TargetName="border" Property="Background" Value="LightGreen" />
-                        </Trigger>
-                        <Trigger Property="IsPressed" Value="true">
-                            <Setter TargetName="border" Property="Background" Value="Green" />
-                        </Trigger>
-                    </ControlTemplate.Triggers>
-                </ControlTemplate>
-            </Button.Template>
-        </Button>
+        <Border
+            x:Name="DragMask"
+            DragLeave="MaskLeave"
+            Drop="MaskDrag" />
     </Grid>
 </Window>

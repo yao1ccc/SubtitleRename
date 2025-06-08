@@ -4,7 +4,7 @@ using System.Windows.Data;
 
 namespace SubtitleRename.ViewModels
 {
-    sealed class DirectoryInfoConverter : IValueConverter
+    internal sealed class DirectoryInfoConverter : IValueConverter
     {
         public static DirectoryInfoConverter Instance { get; } = new();
 
@@ -13,17 +13,36 @@ namespace SubtitleRename.ViewModels
             return value switch
             {
                 DirectoryInfo directoryInfo => directoryInfo.FullName,
+                null => "",
                 _ => throw new ArgumentException("path transforms err"),
             };
         }
 
-        public object? ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
+        public object? ConvertBack(
+            object value,
+            Type targetType,
+            object parameter,
+            CultureInfo culture
+        )
         {
-            return value switch
+            if (value is string path)
             {
-                string path when !string.IsNullOrWhiteSpace(path) => new DirectoryInfo(path),
-                _ => null,
-            };
+                if (string.IsNullOrEmpty(path))
+                {
+                    return Binding.DoNothing;
+                }
+
+                if (Directory.Exists(path))
+                {
+                    return new DirectoryInfo(path);
+                }
+                else if (File.Exists(path))
+                {
+                    return new FileInfo(path).Directory;
+                }
+            }
+
+            return new ArgumentException("directory");
         }
     }
 }

@@ -1,7 +1,7 @@
-﻿using System.Globalization;
+﻿using SubtitleRename.Models;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using System.Windows.Data;
-using SubtitleRename.Models;
 
 namespace SubtitleRename.ViewModels
 {

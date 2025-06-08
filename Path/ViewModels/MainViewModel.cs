@@ -75,9 +75,6 @@ namespace SubtitleRename.ViewModels
                 )
                     ? "suffix conflict"
                     : string.Empty,
-                nameof(RootFolder) => RootFolder is not null && !RootFolder.Exists
-                    ? "folder not exist"
-                    : string.Empty,
                 _ => string.Empty,
             };
 

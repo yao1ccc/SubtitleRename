@@ -8,17 +8,14 @@ namespace SubtitleRename.ViewModels
 {
     sealed class TextBlockHelper
     {
-        public static HighLightText GetRichText(DependencyObject obj)
+        public static HighLightText GetRichText(TextBlock textBlock)
         {
-            return (HighLightText)obj.GetValue(RichText);
+            return (HighLightText)textBlock.GetValue(RichText);
         }
 
-        public static void SetRichText(DependencyObject obj, HighLightText value)
+        public static void SetRichText(TextBlock textBlock, HighLightText value)
         {
-            if (obj is TextBlock textBlock)
-            {
-                textBlock.SetValue(RichText, value);
-            }
+            textBlock.SetValue(RichText, value);
         }
 
         public static void OnRichTextChanged(
@@ -52,7 +49,6 @@ namespace SubtitleRename.ViewModels
             }
         }
 
-        // Using a DependencyProperty as the backing store for Text.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty RichText = DependencyProperty.RegisterAttached(
             "RichText",
             typeof(HighLightText),
