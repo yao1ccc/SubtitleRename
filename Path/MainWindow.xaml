@@ -190,7 +190,6 @@
                 Margin="5"
                 FontSize="15"
                 Foreground="White"
-                ItemTemplateSelector="{x:Static vm:FileTypeTemplateSelector.Instance}"
                 ItemsSource="{Binding LINQBinding, Mode=OneWay}">
                 <ItemsControl.Template>
                     <ControlTemplate TargetType="{x:Type ItemsControl}">
@@ -206,8 +205,8 @@
                         </Border>
                     </ControlTemplate>
                 </ItemsControl.Template>
-                <ItemsControl.Resources>
-                    <DataTemplate x:Key="Video">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
                         <Grid>
                             <Grid.ColumnDefinitions>
                                 <ColumnDefinition Width="auto" />
@@ -218,28 +217,19 @@
                                 Grid.Column="0"
                                 Width="15"
                                 Height="15"
-                                Margin="3,0"
-                                Fill="LightBlue" />
+                                Margin="3,0" />
                             <TextBlock Grid.Column="1" vm:TextBlockHelper.RichText="{Binding}" />
                         </Grid>
+                        <DataTemplate.Triggers>
+                            <DataTrigger Binding="{Binding Converter={x:Static vm:FiletypeToBoolConverter.Instance}}" Value="true">
+                                <Setter TargetName="Ellipse" Property="Fill" Value="LightBlue" />
+                            </DataTrigger>
+                            <DataTrigger Binding="{Binding Converter={x:Static vm:FiletypeToBoolConverter.Instance}}" Value="false">
+                                <Setter TargetName="Ellipse" Property="Fill" Value="LightCoral" />
+                            </DataTrigger>
+                        </DataTemplate.Triggers>
                     </DataTemplate>
-                    <DataTemplate x:Key="Subtitle">
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="auto" />
-                                <ColumnDefinition />
-                            </Grid.ColumnDefinitions>
-                            <Ellipse
-                                x:Name="Ellipse"
-                                Grid.Column="0"
-                                Width="15"
-                                Height="15"
-                                Margin="3,0"
-                                Fill="LightCoral" />
-                            <TextBlock Grid.Column="1" vm:TextBlockHelper.RichText="{Binding}" />
-                        </Grid>
-                    </DataTemplate>
-                </ItemsControl.Resources>
+                </ItemsControl.ItemTemplate>
             </ItemsControl>
             <Button
                 Grid.Row="4"
