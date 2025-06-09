@@ -30,7 +30,7 @@ namespace SubtitleRename.Models
             FileCollections.Select(x =>
                 (regexFilter is null)
                     ? x.ToHighLightText(fileType)
-                    : x.ToHighLightText(regexFilter.GroupIndex, fileType)
+                    : x.ToHighLightText(regexFilter.FilterIndex, fileType)
             );
 
         private readonly Func<DirectoryInfo?> directoryGetter = func;
@@ -39,6 +39,40 @@ namespace SubtitleRename.Models
 
         private DirectoryInfo? DirectoryHandler => directoryGetter.Invoke();
         private readonly FileType fileType = fileType;
+
+        public bool Next()
+        {
+            if (Filter is null)
+            {
+                return false;
+            }
+
+            if (Filter.Next())
+            {
+                foreach (var f in FileCollections)
+                {
+                    f.Next();
+                }
+            }
+            return true;
+        }
+
+        public bool Previous()
+        {
+            if (Filter is null)
+            {
+                return false;
+            }
+
+            if (Filter.Previous())
+            {
+                foreach (var f in FileCollections)
+                {
+                    f.Previous();
+                }
+            }
+            return true;
+        }
 
         public void OnDirectoryChanged()
         {
@@ -83,27 +117,27 @@ namespace SubtitleRename.Models
                 return;
             }
 
-            regexFilter.GroupIndex = 0;
+            regexFilter.FilterIndex = 0;
 
             foreach (var f in FileCollections)
             {
                 if (regexFilter.regex.Match(f.FileInfo.Name).Success)
                 {
-                    f.MatchResult = regexFilter.regex.Match(f.FileInfo.Name);
+                    f.MatchResult = regexFilter.regex.Matches(f.FileInfo.Name);
                 }
             }
 
             var sample = FileCollections.FirstOrDefault();
             if (sample?.MatchResult is not null)
             {
-                for (int i = 1; i < sample.MatchResult.Groups.Count; i++)
+                for (int i = 1; i < sample.MatchResult[0].Groups.Count; i++)
                 {
-                    var match = DigitRegex().Match(sample.MatchResult.Groups[i].Value);
+                    var match = DigitRegex().Match(sample.MatchResult[0].Groups[i].Value);
                     if (match.Success)
                     {
-                        regexFilter.GroupIndex = i;
+                        regexFilter.FilterIndex = i;
                         Debug.WriteLine(
-                            $"Index:{i} all:{sample.MatchResult.Value} value:{sample.MatchResult.Groups[i].Value}"
+                            $"Index:{i} all:{sample.MatchResult[0].Value} value:{sample.MatchResult[0].Groups[i].Value}"
                         );
                         break;
                     }
@@ -120,14 +154,15 @@ namespace SubtitleRename.Models
 
             foreach (FileCollectionItem f in FileCollections)
             {
-                if (f.MatchText(regexFilter.GroupIndex) is null)
+                if (f.MatchText(regexFilter.FilterIndex) is null)
                 {
                     f.TargetName = null;
                     continue;
                 }
 
                 FileCollectionItem? matchVideo = other.FileCollections.Find(x =>
-                    x.MatchText(other.regexFilter.GroupIndex) == f.MatchText(regexFilter.GroupIndex)
+                    x.MatchText(other.regexFilter.FilterIndex)
+                    == f.MatchText(regexFilter.FilterIndex)
                 );
 
                 if (matchVideo is not null)

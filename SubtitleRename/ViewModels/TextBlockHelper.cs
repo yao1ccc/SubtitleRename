@@ -1,8 +1,8 @@
-﻿using System.Windows;
+﻿using SubtitleRename.Models;
+using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Documents;
 using System.Windows.Media;
-using SubtitleRename.Models;
 
 namespace SubtitleRename.ViewModels
 {

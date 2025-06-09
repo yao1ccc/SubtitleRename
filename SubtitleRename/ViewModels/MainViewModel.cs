@@ -1,9 +1,9 @@
-﻿using System.ComponentModel;
-using System.IO;
-using System.Text.RegularExpressions;
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using SubtitleRename.Models;
+using System.ComponentModel;
+using System.IO;
+using System.Text.RegularExpressions;
 
 namespace SubtitleRename.ViewModels
 {
@@ -81,29 +81,37 @@ namespace SubtitleRename.ViewModels
         [RelayCommand]
         public void SubtitleNextIndex()
         {
-            Subtitle.Filter?.Next();
-            OnPropertyChanged(nameof(LINQBinding));
+            if (Subtitle.Next())
+            {
+                OnPropertyChanged(nameof(LINQBinding));
+            }
         }
 
         [RelayCommand]
         public void SubtitlePreviousIndex()
         {
-            Subtitle.Filter?.Previous();
-            OnPropertyChanged(nameof(LINQBinding));
+            if (Subtitle.Previous())
+            {
+                OnPropertyChanged(nameof(LINQBinding));
+            }
         }
 
         [RelayCommand]
         public void VideoNextIndex()
         {
-            Video.Filter?.Next();
-            OnPropertyChanged(nameof(LINQBinding));
+            if (Video.Next())
+            {
+                OnPropertyChanged(nameof(LINQBinding));
+            }
         }
 
         [RelayCommand]
         public void VideoPreviousIndex()
         {
-            Video.Filter?.Previous();
-            OnPropertyChanged(nameof(LINQBinding));
+            if (Video.Previous())
+            {
+                OnPropertyChanged(nameof(LINQBinding));
+            }
         }
 
         [RelayCommand]

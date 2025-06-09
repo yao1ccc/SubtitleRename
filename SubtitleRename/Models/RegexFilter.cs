@@ -5,18 +5,36 @@ namespace SubtitleRename.Models
     sealed class RegexFilter(Regex re)
     {
         public readonly Regex regex = re;
-        public int GroupIndex { get; set; } = 0;
+        public int FilterIndex { get; set; }
 
         private int Length => regex.GetGroupNumbers().Length;
 
-        public void Next()
+        public bool Next()
         {
-            GroupIndex = (GroupIndex + 1) % Length;
+            if (FilterIndex < Length - 1)
+            {
+                FilterIndex++;
+                return false;
+            }
+            else
+            {
+                FilterIndex = 0;
+                return true;
+            }
         }
 
-        public void Previous()
+        public bool Previous()
         {
-            GroupIndex = (GroupIndex - 1) % Length;
+            if (FilterIndex > 0)
+            {
+                FilterIndex--;
+                return false;
+            }
+            else
+            {
+                FilterIndex = Length - 1;
+                return true;
+            }
         }
 
         public override string ToString() => regex.ToString();
