@@ -2,13 +2,21 @@
 
 namespace SubtitleRename.Models
 {
-    sealed class RegexFilter(Regex re)
+    /// <summary>
+    /// Regex and capturing group index
+    /// </summary>
+    sealed class RegexMatcher(Regex re)
     {
         public readonly Regex regex = re;
         public int FilterIndex { get; set; }
 
         private int Length => regex.GetGroupNumbers().Length;
-
+        /// <summary>
+        /// Next capturing group
+        /// </summary>
+        /// <returns>
+        /// Whether loop cycled
+        /// </returns>
         public bool Next()
         {
             if (FilterIndex < Length - 1)
@@ -23,6 +31,12 @@ namespace SubtitleRename.Models
             }
         }
 
+        /// <summary>
+        /// Previous capturing group
+        /// </summary>
+        /// <returns>
+        /// Whether loop cycled
+        /// </returns>
         public bool Previous()
         {
             if (FilterIndex > 0)

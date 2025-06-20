@@ -1,5 +1,8 @@
 ﻿namespace SubtitleRename.Models
 {
+    /// <summary>
+    /// Filename and highlight part
+    /// </summary>
     sealed record HighLightText(string Text, int Start, int Length, FileType FileType)
     {
         public string Text = Text;

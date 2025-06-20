@@ -45,7 +45,7 @@ namespace SubtitleRename
             DragMask.Background = null;
         }
 
-        private void MaskLeave(object sender, DragEventArgs e)
+        private void MaskDragLeave(object sender, DragEventArgs e)
         {
             {
                 DragMask.Background = null;

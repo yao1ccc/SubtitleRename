@@ -4,9 +4,9 @@ using System.Windows.Data;
 
 namespace SubtitleRename.ViewModels
 {
-    sealed class DirectoryNameConverter : IValueConverter
+    sealed class DirectoryToNameConverter : IValueConverter
     {
-        public static DirectoryNameConverter Instance { get; } = new();
+        public static DirectoryToNameConverter Instance { get; } = new();
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {

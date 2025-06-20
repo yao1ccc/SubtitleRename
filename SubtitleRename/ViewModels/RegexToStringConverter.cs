@@ -5,15 +5,15 @@ using System.Windows.Data;
 
 namespace SubtitleRename.ViewModels
 {
-    sealed class RegexConverter : IValueConverter
+    sealed class RegexToStringConverter : IValueConverter
     {
-        public static RegexConverter Instance { get; } = new();
+        public static RegexToStringConverter Instance { get; } = new();
 
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
             return value switch
             {
-                RegexFilter regex => regex.ToString(),
+                RegexMatcher regex => regex.ToString(),
                 _ => string.Empty,
             };
         }
@@ -25,7 +25,7 @@ namespace SubtitleRename.ViewModels
                 try
                 {
                     Regex regex = new(s);
-                    return new RegexFilter(regex);
+                    return new RegexMatcher(regex);
                 }
                 catch
                 {

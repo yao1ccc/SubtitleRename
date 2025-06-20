@@ -27,21 +27,21 @@ namespace SubtitleRename.ViewModels
                 OnPropertyChanged(nameof(LINQBinding));
             }
         }
-        public RegexFilter? SubtitleFilter
+        public RegexMatcher? SubtitleFilter
         {
-            get => Subtitle.Filter;
+            get => Subtitle.Matcher;
             set
             {
-                Subtitle.Filter = value;
+                Subtitle.Matcher = value;
                 OnPropertyChanged(nameof(LINQBinding));
             }
         }
-        public RegexFilter? VideoFilter
+        public RegexMatcher? VideoFilter
         {
-            get => Video.Filter;
+            get => Video.Matcher;
             set
             {
-                Video.Filter = value;
+                Video.Matcher = value;
                 OnPropertyChanged(nameof(LINQBinding));
             }
         }
@@ -79,7 +79,7 @@ namespace SubtitleRename.ViewModels
             };
 
         [RelayCommand]
-        public void SubtitleNextIndex()
+        public void SubtitleNext()
         {
             if (Subtitle.Next())
             {
@@ -88,7 +88,7 @@ namespace SubtitleRename.ViewModels
         }
 
         [RelayCommand]
-        public void SubtitlePreviousIndex()
+        public void SubtitlePrevious()
         {
             if (Subtitle.Previous())
             {
@@ -97,7 +97,7 @@ namespace SubtitleRename.ViewModels
         }
 
         [RelayCommand]
-        public void VideoNextIndex()
+        public void VideoNext()
         {
             if (Video.Next())
             {
@@ -106,7 +106,7 @@ namespace SubtitleRename.ViewModels
         }
 
         [RelayCommand]
-        public void VideoPreviousIndex()
+        public void VideoPrevious()
         {
             if (Video.Previous())
             {
@@ -115,7 +115,7 @@ namespace SubtitleRename.ViewModels
         }
 
         [RelayCommand]
-        public void FileConverter()
+        public void ChangeName()
         {
             Subtitle.TargetNameUpdate(Video);
 
@@ -128,8 +128,8 @@ namespace SubtitleRename.ViewModels
                 f.FileInfo.MoveTo(Path.Combine(rootFolder.ToString(), f.TargetName));
             }
 
-            Subtitle.Filter = null;
-            Video.Filter = null;
+            Subtitle.Matcher = null;
+            Video.Matcher = null;
             Subtitle.OnDirectoryChanged();
 
             OnPropertyChanged(nameof(LINQBinding));
@@ -141,8 +141,8 @@ namespace SubtitleRename.ViewModels
             Video = new(() => rootFolder, FileType.Video);
             Subtitle.Suffixes = ["ass", "ssa", "srt"];
             Video.Suffixes = ["mkv", "mp4"];
-            Subtitle.Filter = new RegexFilter(DefaultRegex());
-            Video.Filter = new RegexFilter(DefaultRegex());
+            Subtitle.Matcher = new RegexMatcher(DefaultRegex());
+            Video.Matcher = new RegexMatcher(DefaultRegex());
         }
 
         [GeneratedRegex("[^\\d](\\d\\d)[^\\d]")]

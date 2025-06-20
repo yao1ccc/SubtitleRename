@@ -1,18 +1,25 @@
 ﻿using System.Diagnostics;
 using System.IO;
+using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 
 namespace SubtitleRename.Models
 {
+    /// <summary>
+    /// Main function
+    /// </summary>
+    /// <param name="func">
+    /// Reference to directory
+    /// </param>
     sealed partial class FileManager(Func<DirectoryInfo?> func, FileType fileType)
     {
-        public RegexFilter? Filter
+        public RegexMatcher? Matcher
         {
-            get => regexFilter;
+            get => matcher;
             set
             {
-                regexFilter = value;
-                OnRegexChanged();
+                matcher = value;
+                OnPropertyChanged();
             }
         }
         public string[] Suffixes
@@ -21,33 +28,40 @@ namespace SubtitleRename.Models
             set
             {
                 suffixes = value;
-                OnSuffixChanged();
+                OnPropertyChanged();
             }
         }
-        public List<FileCollectionItem> FileCollections { get; set; } = [];
+
+        public List<MatchedFileItem> FileCollections { get; set; } = [];
 
         public IEnumerable<HighLightText> HighLightTexts =>
             FileCollections.Select(x =>
-                (regexFilter is null)
+                (matcher is null)
                     ? x.ToHighLightText(fileType)
-                    : x.ToHighLightText(regexFilter.FilterIndex, fileType)
+                    : x.ToHighLightText(matcher.FilterIndex, fileType)
             );
 
         private readonly Func<DirectoryInfo?> directoryGetter = func;
-        private RegexFilter? regexFilter;
+        private RegexMatcher? matcher;
         private string[] suffixes = [];
 
         private DirectoryInfo? DirectoryHandler => directoryGetter.Invoke();
         private readonly FileType fileType = fileType;
 
+        /// <summary>
+        /// Next regex match or capturing group
+        /// </summary>
+        /// <returns>
+        /// Whether data changed
+        /// </returns>
         public bool Next()
         {
-            if (Filter is null)
+            if (Matcher is null)
             {
                 return false;
             }
 
-            if (Filter.Next())
+            if (Matcher.Next())
             {
                 foreach (var f in FileCollections)
                 {
@@ -57,14 +71,20 @@ namespace SubtitleRename.Models
             return true;
         }
 
+        /// <summary>
+        /// Previous regex match or capturing group
+        /// </summary>
+        /// <returns>
+        /// Whether data changed
+        /// </returns>
         public bool Previous()
         {
-            if (Filter is null)
+            if (Matcher is null)
             {
                 return false;
             }
 
-            if (Filter.Previous())
+            if (Matcher.Previous())
             {
                 foreach (var f in FileCollections)
                 {
@@ -74,36 +94,51 @@ namespace SubtitleRename.Models
             return true;
         }
 
+        /// <summary>
+        /// Call when directory changed
+        /// </summary>
         public void OnDirectoryChanged()
         {
-            OnSuffixChanged();
+            OnPropertyChanged("Directory");
+        }
+
+        private void OnPropertyChanged([CallerMemberName] string? propertyName = null)
+        {
+            switch (propertyName)
+            {
+                case "Directory":
+                    goto case "Matcher";
+
+                case "Matcher":
+                    if (DirectoryHandler is null){return;}
+                    OnSuffixChanged();
+                    goto case "Suffixes";
+
+                case "Suffixes":
+                    if (FileCollections.Count == 0){return;}
+                    OnRegexChanged();
+                    return;
+            }
         }
 
         private void OnSuffixChanged()
         {
             FileCollections.Clear();
 
-            if (DirectoryHandler is null)
-            {
-                return;
-            }
-
             foreach (string s in suffixes)
             {
                 FileCollections.AddRange(
-                    DirectoryHandler
+                    DirectoryHandler!
                         .GetFiles("*." + s)
                         .ToList()
-                        .ConvertAll(x => new FileCollectionItem(x))
+                        .ConvertAll(x => new MatchedFileItem(x))
                 );
             }
-
-            OnRegexChanged();
         }
 
         private void OnRegexChanged()
         {
-            if (regexFilter is null)
+            if (matcher is null)
             {
                 foreach (var f in FileCollections)
                 {
@@ -112,18 +147,13 @@ namespace SubtitleRename.Models
                 return;
             }
 
-            if (FileCollections.Count == 0)
-            {
-                return;
-            }
-
-            regexFilter.FilterIndex = 0;
+            matcher.FilterIndex = 0;
 
             foreach (var f in FileCollections)
             {
-                if (regexFilter.regex.Match(f.FileInfo.Name).Success)
+                if (matcher.regex.Match(f.FileInfo.Name).Success)
                 {
-                    f.MatchResult = regexFilter.regex.Matches(f.FileInfo.Name);
+                    f.MatchResult = matcher.regex.Matches(f.FileInfo.Name);
                 }
             }
 
@@ -135,7 +165,7 @@ namespace SubtitleRename.Models
                     var match = DigitRegex().Match(sample.MatchResult[0].Groups[i].Value);
                     if (match.Success)
                     {
-                        regexFilter.FilterIndex = i;
+                        matcher.FilterIndex = i;
                         Debug.WriteLine(
                             $"Index:{i} all:{sample.MatchResult[0].Value} value:{sample.MatchResult[0].Groups[i].Value}"
                         );
@@ -147,22 +177,22 @@ namespace SubtitleRename.Models
 
         public void TargetNameUpdate(FileManager other)
         {
-            if (regexFilter is null || other.regexFilter is null)
+            if (matcher is null || other.matcher is null)
             {
                 return;
             }
 
-            foreach (FileCollectionItem f in FileCollections)
+            foreach (MatchedFileItem f in FileCollections)
             {
-                if (f.MatchText(regexFilter.FilterIndex) is null)
+                if (f.MatchText(matcher.FilterIndex) is null)
                 {
                     f.TargetName = null;
                     continue;
                 }
 
-                FileCollectionItem? matchVideo = other.FileCollections.Find(x =>
-                    x.MatchText(other.regexFilter.FilterIndex)
-                    == f.MatchText(regexFilter.FilterIndex)
+                MatchedFileItem? matchVideo = other.FileCollections.Find(x =>
+                    x.MatchText(other.matcher.FilterIndex)
+                    == f.MatchText(matcher.FilterIndex)
                 );
 
                 if (matchVideo is not null)
@@ -172,6 +202,7 @@ namespace SubtitleRename.Models
                         + f.FileInfo.Extension;
                 }
             }
+
         }
 
         [GeneratedRegex("\\d")]

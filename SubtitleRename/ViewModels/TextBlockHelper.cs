@@ -6,6 +6,9 @@ using System.Windows.Media;
 
 namespace SubtitleRename.ViewModels
 {
+    /// <summary>
+    /// HighLight attached property
+    /// </summary>
     sealed class TextBlockHelper
     {
         public static HighLightText GetRichText(TextBlock textBlock)

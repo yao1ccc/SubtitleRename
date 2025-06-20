@@ -140,28 +140,27 @@
             <RowDefinition Height="33" />
             <RowDefinition />
         </Grid.RowDefinitions>
-        <Grid Grid.Row="0">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition />
-                <ColumnDefinition Width="45" />
-                <ColumnDefinition Width="45" />
-            </Grid.ColumnDefinitions>
+
+        <StackPanel
+            Grid.Row="0"
+            FlowDirection="RightToLeft"
+            Orientation="Horizontal">
             <Button
-                Grid.Column="1"
-                Click="MinimizeClick"
-                Content="–"
-                Style="{StaticResource CloseButten}"
-                WindowChrome.IsHitTestVisibleInChrome="True" />
-            <Button
-                Grid.Column="2"
+                Width="40"
                 Click="ExitClick"
                 Content="×"
                 Style="{StaticResource CloseButten}"
                 WindowChrome.IsHitTestVisibleInChrome="True" />
-        </Grid>
+            <Button
+                Width="40"
+                Click="MinimizeClick"
+                Content="–"
+                Style="{StaticResource CloseButten}"
+                WindowChrome.IsHitTestVisibleInChrome="True" />
+        </StackPanel>
+
         <Grid Grid.Row="1" Margin="10">
             <Grid.RowDefinitions>
-                <RowDefinition Height="auto" />
                 <RowDefinition Height="auto" />
                 <RowDefinition Height="auto" />
                 <RowDefinition Height="*" />
@@ -175,15 +174,16 @@
                     <Style BasedOn="{StaticResource {x:Type TextBox}}" TargetType="{x:Type TextBox}">
                         <Style.Triggers>
                             <Trigger Property="IsFocused" Value="True">
-                                <Setter Property="Text" Value="{Binding RootFolder, Converter={x:Static vm:DirectoryInfoConverter.Instance}, ValidatesOnExceptions=True}" />
+                                <Setter Property="Text" Value="{Binding RootFolder, Converter={x:Static vm:DirectoryToStringConverter.Instance}, ValidatesOnExceptions=True}" />
                             </Trigger>
                             <Trigger Property="IsFocused" Value="False">
-                                <Setter Property="Text" Value="{Binding RootFolder, Converter={x:Static vm:DirectoryNameConverter.Instance}, Mode=OneWay}" />
+                                <Setter Property="Text" Value="{Binding RootFolder, Converter={x:Static vm:DirectoryToNameConverter.Instance}, Mode=OneWay}" />
                             </Trigger>
                         </Style.Triggers>
                     </Style>
                 </TextBox.Style>
             </TextBox>
+
             <Grid Grid.Row="1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition />
@@ -191,56 +191,61 @@
                     <ColumnDefinition Width="Auto" />
                     <ColumnDefinition Width="200" />
                 </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+
                 <TextBox
+                    Grid.Row="0"
                     Grid.Column="0"
                     Margin="5"
-                    Text="{Binding VideoFilter, Converter={x:Static vm:RegexConverter.Instance}, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" />
+                    Text="{Binding VideoFilter, Converter={x:Static vm:RegexToStringConverter.Instance}, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" />
                 <Button
+                    Grid.Row="0"
                     Grid.Column="1"
                     Margin="0,0,5,0"
                     Command="{Binding VideoPreviousIndexCommand}"
                     Content="⇦"
                     Style="{StaticResource LoopButtonStyle}" />
                 <Button
+                    Grid.Row="0"
                     Grid.Column="2"
                     Command="{Binding VideoNextIndexCommand}"
                     Content="⇨"
                     Style="{StaticResource LoopButtonStyle}" />
                 <TextBox
+                    Grid.Row="0"
                     Grid.Column="3"
                     Margin="5"
                     Text="{Binding VideoSuffixes, Converter={x:Static vm:SplitConverter.Instance}, ValidatesOnDataErrors=True}" />
-            </Grid>
-            <Grid Grid.Row="2">
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="Auto" />
-                    <ColumnDefinition Width="200" />
-                </Grid.ColumnDefinitions>
                 <TextBox
+                    Grid.Row="1"
                     Grid.Column="0"
                     Margin="5"
-                    Text="{Binding SubtitleFilter, Converter={x:Static vm:RegexConverter.Instance}, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" />
+                    Text="{Binding SubtitleFilter, Converter={x:Static vm:RegexToStringConverter.Instance}, UpdateSourceTrigger=PropertyChanged, ValidatesOnExceptions=True}" />
                 <Button
+                    Grid.Row="1"
                     Grid.Column="1"
                     Margin="0,0,5,0"
                     Command="{Binding SubtitlePreviousIndexCommand}"
                     Content="⇦"
                     Style="{StaticResource LoopButtonStyle}" />
                 <Button
+                    Grid.Row="1"
                     Grid.Column="2"
                     Command="{Binding SubtitleNextIndexCommand}"
                     Content="⇨"
                     Style="{StaticResource LoopButtonStyle}" />
                 <TextBox
+                    Grid.Row="1"
                     Grid.Column="3"
                     Margin="5"
                     Text="{Binding SubtitleSuffixes, Converter={x:Static vm:SplitConverter.Instance}, ValidatesOnDataErrors=True}" />
             </Grid>
             <ItemsControl
                 x:Name="itemsControl"
-                Grid.Row="3"
+                Grid.Row="2"
                 Margin="5"
                 FontSize="15"
                 Foreground="White"
@@ -261,19 +266,14 @@
                 </ItemsControl.Template>
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
-                        <Grid>
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="auto" />
-                                <ColumnDefinition />
-                            </Grid.ColumnDefinitions>
+                        <StackPanel Orientation="Horizontal">
                             <Ellipse
                                 x:Name="Ellipse"
-                                Grid.Column="0"
                                 Width="15"
                                 Height="15"
                                 Margin="3,0" />
-                            <TextBlock Grid.Column="1" vm:TextBlockHelper.RichText="{Binding}" />
-                        </Grid>
+                            <TextBlock vm:TextBlockHelper.RichText="{Binding}" />
+                        </StackPanel>
                         <DataTemplate.Triggers>
                             <DataTrigger Binding="{Binding Converter={x:Static vm:FiletypeToBoolConverter.Instance}}" Value="true">
                                 <Setter TargetName="Ellipse" Property="Fill" Value="LightBlue" />
@@ -286,7 +286,7 @@
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
             <Button
-                Grid.Row="4"
+                Grid.Row="3"
                 Width="100"
                 Height="40"
                 Margin="5"
@@ -322,7 +322,7 @@
         <Border
             x:Name="DragMask"
             Grid.Row="1"
-            DragLeave="MaskLeave"
+            DragLeave="MaskDragLeave"
             Drop="MaskDrag" />
     </Grid>
 </Window>

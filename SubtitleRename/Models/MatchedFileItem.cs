@@ -3,15 +3,21 @@ using System.Text.RegularExpressions;
 
 namespace SubtitleRename.Models
 {
-    sealed class FileCollectionItem(FileInfo file)
+    sealed class MatchedFileItem(FileInfo file)
     {
         public FileInfo FileInfo { get; } = file;
         public string? TargetName { get; set; }
         public MatchCollection? MatchResult { get; set; }
         public int MatchIndex { get; set; }
 
+        /// <param name="i">
+        /// Capturing group index
+        /// </param>
         public string? MatchText(int i) => MatchResult?[MatchIndex].Groups[i].Value;
 
+        /// <summary>
+        /// Next regex match
+        /// </summary>
         public void Next()
         {
             if (MatchResult is null)
@@ -29,6 +35,10 @@ namespace SubtitleRename.Models
             }
         }
 
+
+        /// <summary>
+        /// Previous regex match
+        /// </summary>
         public void Previous()
         {
             if (MatchResult is null)

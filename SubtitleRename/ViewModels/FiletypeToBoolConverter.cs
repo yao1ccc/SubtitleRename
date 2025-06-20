@@ -4,6 +4,9 @@ using System.Windows.Data;
 
 namespace SubtitleRename.ViewModels
 {
+    /// <summary>
+    /// Video to true, subtitle to false
+    /// </summary>
     internal class FiletypeToBoolConverter : IValueConverter
     {
         public static FiletypeToBoolConverter Instance { get; } = new();

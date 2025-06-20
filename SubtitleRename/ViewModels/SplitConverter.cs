@@ -3,6 +3,9 @@ using System.Windows.Data;
 
 namespace SubtitleRename.ViewModels
 {
+    /// <summary>
+    /// String to string array by space
+    /// </summary>
     sealed class SplitConverter : IValueConverter
     {
         public static SplitConverter Instance { get; } = new();
