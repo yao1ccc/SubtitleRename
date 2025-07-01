@@ -11,6 +11,7 @@
     AllowDrop="True"
     Background="#FF1F1F1F"
     DragEnter="WindowDragEnter"
+    MouseDown="WindowClick"
     PreviewKeyDown="MainWindowKeyEnter"
     mc:Ignorable="av">
 
@@ -247,9 +248,11 @@
                 x:Name="itemsControl"
                 Grid.Row="2"
                 Margin="5"
+                FocusVisualStyle="{x:Null}"
                 FontSize="15"
                 Foreground="White"
-                ItemsSource="{Binding LINQBinding, Mode=OneWay}">
+                ItemsSource="{Binding LINQBinding, Mode=OneWay}"
+                MouseDown="ItemControlClick">
                 <ItemsControl.Template>
                     <ControlTemplate TargetType="{x:Type ItemsControl}">
                         <Border
@@ -285,39 +288,82 @@
                     </DataTemplate>
                 </ItemsControl.ItemTemplate>
             </ItemsControl>
-            <Button
+            <StackPanel
                 Grid.Row="3"
-                Width="100"
-                Height="40"
-                Margin="5"
-                HorizontalAlignment="Right"
-                Command="{Binding FileConverterCommand}"
-                Content="▷"
-                FontSize="25"
-                Foreground="White">
-                <Button.Template>
-                    <ControlTemplate TargetType="{x:Type Button}">
-                        <Border x:Name="border" Background="Green">
-                            <ContentPresenter
-                                x:Name="contentPresenter"
-                                Margin="1"
-                                HorizontalAlignment="Center"
-                                VerticalAlignment="Center"
-                                Focusable="False"
-                                RecognizesAccessKey="True"
-                                SnapsToDevicePixels="True" />
-                        </Border>
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="true">
-                                <Setter TargetName="border" Property="Background" Value="LightGreen" />
-                            </Trigger>
-                            <Trigger Property="IsPressed" Value="true">
-                                <Setter TargetName="border" Property="Background" Value="Green" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Button.Template>
-            </Button>
+                FlowDirection="RightToLeft"
+                Orientation="Horizontal">
+                <Button
+                    Width="100"
+                    Margin="5"
+                    Command="{Binding FileConverterCommand}"
+                    Content="▷"
+                    FontSize="25"
+                    Foreground="LightGreen">
+                    <Button.Template>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <Border
+                                x:Name="border"
+                                Background="#FF1F1F1F"
+                                BorderThickness="1">
+                                <ContentPresenter
+                                    x:Name="contentPresenter"
+                                    Margin="1"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Focusable="False"
+                                    RecognizesAccessKey="True"
+                                    SnapsToDevicePixels="True" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="true">
+                                    <Setter TargetName="border" Property="Background" Value="#383838" />
+                                    <Setter TargetName="border" Property="BorderBrush" Value="#FFABADB3" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="true">
+                                    <Setter TargetName="border" Property="Background" Value="#343434" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+                <Button
+                    Width="100"
+                    Margin="5"
+                    Command="{Binding ConverterSubtitleCommand}"
+                    Content="T2S"
+                    FontSize="25"
+                    Foreground="LightGreen">
+                    <Button.Template>
+                        <ControlTemplate TargetType="{x:Type Button}">
+                            <Border
+                                x:Name="border"
+                                Background="#FF1F1F1F"
+                                BorderThickness="1">
+                                <ContentPresenter
+                                    x:Name="contentPresenter"
+                                    Margin="1"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    Focusable="False"
+                                    RecognizesAccessKey="True"
+                                    SnapsToDevicePixels="True" />
+                            </Border>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsMouseOver" Value="true">
+                                    <Setter TargetName="border" Property="Background" Value="#383838" />
+                                    <Setter TargetName="border" Property="BorderBrush" Value="#FFABADB3" />
+                                </Trigger>
+                                <Trigger Property="IsPressed" Value="true">
+                                    <Setter TargetName="border" Property="Background" Value="#343434" />
+                                </Trigger>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Foreground" Value="Gray" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Button.Template>
+                </Button>
+            </StackPanel>
         </Grid>
         <Border
             x:Name="DragMask"

@@ -1,7 +1,9 @@
-﻿using System.Diagnostics;
+﻿using Microsoft.International.Converters.TraditionalChineseToSimplifiedConverter;
+using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace SubtitleRename.Models
 {
@@ -110,12 +112,12 @@ namespace SubtitleRename.Models
                     goto case "Matcher";
 
                 case "Matcher":
-                    if (DirectoryHandler is null){return;}
+                    if (DirectoryHandler is null) { return; }
                     OnSuffixChanged();
                     goto case "Suffixes";
 
                 case "Suffixes":
-                    if (FileCollections.Count == 0){return;}
+                    if (FileCollections.Count == 0) { return; }
                     OnRegexChanged();
                     return;
             }
@@ -203,6 +205,17 @@ namespace SubtitleRename.Models
                 }
             }
 
+        }
+
+        public async Task ConverterAsync(CancellationToken token)
+        {
+            await Parallel.ForEachAsync(FileCollections, token,
+                async (fileCollections, token) =>
+            {
+                string originalText = await File.ReadAllTextAsync(fileCollections.FileInfo.FullName, token);
+                string processedText = ChineseConverter.Convert(originalText, ChineseConversionDirection.TraditionalToSimplified);
+                await File.WriteAllTextAsync(fileCollections.FileInfo.FullName, processedText, CancellationToken.None);
+            });
         }
 
         [GeneratedRegex("\\d")]

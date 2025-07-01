@@ -79,7 +79,7 @@ namespace SubtitleRename.ViewModels
             };
 
         [RelayCommand]
-        public void SubtitleNext()
+        private void SubtitleNext()
         {
             if (Subtitle.Next())
             {
@@ -88,7 +88,7 @@ namespace SubtitleRename.ViewModels
         }
 
         [RelayCommand]
-        public void SubtitlePrevious()
+        private void SubtitlePrevious()
         {
             if (Subtitle.Previous())
             {
@@ -97,7 +97,7 @@ namespace SubtitleRename.ViewModels
         }
 
         [RelayCommand]
-        public void VideoNext()
+        private void VideoNext()
         {
             if (Video.Next())
             {
@@ -106,7 +106,7 @@ namespace SubtitleRename.ViewModels
         }
 
         [RelayCommand]
-        public void VideoPrevious()
+        private void VideoPrevious()
         {
             if (Video.Previous())
             {
@@ -115,7 +115,7 @@ namespace SubtitleRename.ViewModels
         }
 
         [RelayCommand]
-        public void ChangeName()
+        private void ChangeName()
         {
             Subtitle.TargetNameUpdate(Video);
 
@@ -133,6 +133,19 @@ namespace SubtitleRename.ViewModels
             Subtitle.OnDirectoryChanged();
 
             OnPropertyChanged(nameof(LINQBinding));
+        }
+
+        [RelayCommand]
+        private async Task ConverterSubtitleAsync(CancellationToken token)
+        {
+            try
+            {
+                await Subtitle.ConverterAsync(token);
+            }
+            catch (OperationCanceledException)
+            {
+
+            }
         }
 
         public MainViewModel()

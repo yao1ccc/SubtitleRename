@@ -61,5 +61,15 @@ namespace SubtitleRename
         {
             Close();
         }
+
+        private void ItemControlClick(object sender, MouseButtonEventArgs e)
+        {
+            itemsControl.Focus();
+        }
+
+        private void WindowClick(object sender, MouseButtonEventArgs e)
+        {
+            itemsControl.Focus();
+        }
     }
 }
