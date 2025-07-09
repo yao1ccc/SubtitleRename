@@ -1,9 +1,7 @@
-﻿using Microsoft.International.Converters.TraditionalChineseToSimplifiedConverter;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.IO;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace SubtitleRename.Models
 {
@@ -208,12 +206,13 @@ namespace SubtitleRename.Models
         }
 
         public async Task ConverterAsync(CancellationToken token)
-        {
+        {   
+            using OpenCC openCC = new();
             await Parallel.ForEachAsync(FileCollections, token,
                 async (fileCollections, token) =>
             {
                 string originalText = await File.ReadAllTextAsync(fileCollections.FileInfo.FullName, token);
-                string processedText = ChineseConverter.Convert(originalText, ChineseConversionDirection.TraditionalToSimplified);
+                string processedText = await Task.Run(() => openCC.TraditionalToSimplify(originalText));
                 await File.WriteAllTextAsync(fileCollections.FileInfo.FullName, processedText, CancellationToken.None);
             });
         }
