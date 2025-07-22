@@ -17,7 +17,7 @@ namespace SubtitleRename.ViewModels
             {
                 FileType.Video => true,
                 FileType.Subtitle => false,
-                _ => throw new NotSupportedException(),
+                _ => throw new Exception(),
             };
         }
 
@@ -28,7 +28,7 @@ namespace SubtitleRename.ViewModels
             CultureInfo culture
         )
         {
-            throw new NotImplementedException();
+            throw new Exception();
         }
     }
 }

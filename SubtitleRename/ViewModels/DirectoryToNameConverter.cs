@@ -19,7 +19,7 @@ namespace SubtitleRename.ViewModels
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            throw new ArgumentException("DirectoryNameConverter");
+            throw new Exception("DirectoryNameConverter");
         }
     }
 }

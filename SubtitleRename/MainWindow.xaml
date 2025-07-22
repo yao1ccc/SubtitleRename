@@ -206,13 +206,13 @@
                     Grid.Row="0"
                     Grid.Column="1"
                     Margin="0,0,5,0"
-                    Command="{Binding VideoPreviousIndexCommand}"
+                    Command="{Binding VideoPreviousCommand}"
                     Content="⇦"
                     Style="{StaticResource LoopButtonStyle}" />
                 <Button
                     Grid.Row="0"
                     Grid.Column="2"
-                    Command="{Binding VideoNextIndexCommand}"
+                    Command="{Binding VideoNextCommand}"
                     Content="⇨"
                     Style="{StaticResource LoopButtonStyle}" />
                 <TextBox
@@ -229,13 +229,13 @@
                     Grid.Row="1"
                     Grid.Column="1"
                     Margin="0,0,5,0"
-                    Command="{Binding SubtitlePreviousIndexCommand}"
+                    Command="{Binding SubtitlePreviousCommand}"
                     Content="⇦"
                     Style="{StaticResource LoopButtonStyle}" />
                 <Button
                     Grid.Row="1"
                     Grid.Column="2"
-                    Command="{Binding SubtitleNextIndexCommand}"
+                    Command="{Binding SubtitleNextCommand}"
                     Content="⇨"
                     Style="{StaticResource LoopButtonStyle}" />
                 <TextBox
@@ -295,7 +295,7 @@
                 <Button
                     Width="100"
                     Margin="5"
-                    Command="{Binding FileConverterCommand}"
+                    Command="{Binding ChangeNameCommand}"
                     Content="▷"
                     FontSize="25"
                     Foreground="LightGreen">
